@@ -7,7 +7,7 @@ import {
   getSingleGroup,
   updateGroup,
 } from "../controllers/groups.js";
-import { groupSchema } from "../joi/schemas.js";
+import { groupSchema } from "../joi/groupSchemas.js";
 import verifyToken from "../middlewares/verifyToken.js";
 
 const groupsRouter = Router();

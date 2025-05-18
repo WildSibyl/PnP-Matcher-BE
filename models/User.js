@@ -16,11 +16,37 @@ const userSchema = new Schema({
     select: false,
   },
   birthday: { type: Date, required: [true, "Birthday is required"] },
-  about: { type: String, required: [true, "About section is required"] },
   zipCode: { type: String, required: [true, "Zip code is required"] },
   country: { type: String, required: [true, "Country is required"] },
-  system: { type: String, required: [true, "Game system is required"] },
-  playstyle: { type: String, required: [true, "Playstyle is required"] },
+  experience: {
+    type: String,
+    enum: [
+      "Rookie: Getting to know P&P",
+      "Adventurer: I know my game",
+      "Hero: P&P is my life",
+    ],
+    required: [true, "Experience is required"],
+  },
+  systems: {
+    type: [String],
+    default: [],
+    required: [true, "Game systems is required"],
+  },
+  playstyles: {
+    type: [String],
+    default: [],
+    required: [true, "Playstyle is required"],
+  },
+  likes: {
+    type: [String],
+    default: [],
+    required: [true, "Likes are required"],
+  },
+  dislikes: {
+    type: [String],
+    default: [],
+    required: [true, "Dislikes are required"],
+  },
   days: {
     type: [String],
     enum: ["mon", "tue", "wed", "thu", "fri", "sat", "sun"],
@@ -32,8 +58,16 @@ const userSchema = new Schema({
     max: 31,
     required: [true, "Frequency per month is required"],
   },
-  likes: { type: [String], default: [] },
-  dislikes: { type: [String], default: [] },
+  tagline: {
+    type: String,
+    required: [true, "Tagline is required"],
+    maxLength: 150,
+  },
+  description: {
+    type: String,
+    required: [true, "description is required"],
+    maxLength: 500,
+  },
   groups: [
     // populated by User.findById(id).populate('groups')
     {
