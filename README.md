@@ -16,7 +16,7 @@ Graduation project for the Full Stack Web Development Bootcamp @ WBS CODING SCHO
 ## Commands
 
 - `npm run dev`: Starts development server, pulling environment variables from `.env` file
-- `npm start`: Starts production server, pulling environment variables from the system
+- `npm start`: Starts production server, pulling environment variables from the systems
 
 ## Usage
 
@@ -27,8 +27,7 @@ PnP-Matcher-BE/
 |- controllers/ => Our controller functions per resource
 |- db/
 |   \_ index.js => Database connection with Mongoose
-|- joi/
-|   \_ schemas.js => JOI schemas for data validations
+|- joi/ => JOI schemas for data validations
 |- middlewares/ => custom middlewares
 |- models/ => Our models per resource
 |- routers/ => Our routers per resource

@@ -22,8 +22,16 @@ const groupSchema = new Schema({
   description: { type: String, required: [true, "Description is required"] },
   zipCode: { type: String, required: [true, "Zip code is required"] },
   country: { type: String, required: [true, "Country is required"] },
-  system: { type: String, required: [true, "Game system is required"] },
-  playstyle: { type: String, required: [true, "Playstyle is required"] },
+  systems: {
+    type: [String],
+    default: [],
+    required: [true, "Game systems is required"],
+  },
+  playstyles: {
+    type: [String],
+    default: [],
+    required: [true, "Playstyle is required"],
+  },
   days: {
     type: [String],
     enum: ["mon", "tue", "wed", "thu", "fri", "sat", "sun"],
@@ -36,8 +44,16 @@ const groupSchema = new Schema({
     required: [true, "Frequency per month is required"],
   },
   content: { type: String, required: [true, "Body is required"] },
-  likes: { type: [String], default: [] },
-  dislikes: { type: [String], default: [] },
+  likes: {
+    type: [String],
+    default: [],
+    required: [true, "Likes are required"],
+  },
+  dislikes: {
+    type: [String],
+    default: [],
+    required: [true, "Dislikes are required"],
+  },
   members: {
     type: [String],
     default: [],

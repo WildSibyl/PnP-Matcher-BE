@@ -9,20 +9,25 @@ export const me = async (req, res) => {
 };
 
 export const signUp = async (req, res) => {
+  console.log("SignUp endpoint hit");
+  console.log("Signup payload:", req.body);
+
   const {
     userName,
     email,
     password,
     birthday,
-    about,
     zipCode,
     country,
-    system,
-    playstyle,
-    days,
-    frequencyPerMonth,
+    experience,
+    systems = [],
+    playstyles = [],
     likes = [],
     dislikes = [],
+    days = [],
+    frequencyPerMonth,
+    tagline,
+    description,
   } = req.body;
 
   const userExists = await User.findOne({ email });
@@ -35,16 +40,32 @@ export const signUp = async (req, res) => {
     email,
     password: hashedPassword,
     birthday,
-    about,
     zipCode,
     country,
-    system,
-    playstyle,
-    days,
-    frequencyPerMonth,
+    experience,
+    systems,
+    playstyles,
     likes,
     dislikes,
+    days,
+    frequencyPerMonth,
+    tagline,
+    description,
   });
+
+  const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, {
+    expiresIn: "7d",
+  });
+
+  const isProduction = process.env.NODE_ENV === "production";
+  const cookieOptions = {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? "None" : "Lax",
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+  };
+
+  res.cookie("token", token, cookieOptions);
 
   res.status(201).json({
     id: newUser._id,
