@@ -49,7 +49,7 @@ const userSchema = new Schema({
   },
   days: {
     type: [String],
-    enum: ["mon", "tue", "wed", "thu", "fri", "sat", "sun"],
+    enum: ["MO", "TU", "WE", "TH", "FR", "SA", "SU"],
     required: [true, "At least one available day is required"],
   },
   frequencyPerMonth: {
