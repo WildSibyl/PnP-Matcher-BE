@@ -28,7 +28,7 @@ export const signUpSchema = Joi.object({
   likes: Joi.array().items(likesSchema).min(1).required(),
   dislikes: Joi.array().items(dislikesSchema).min(1).required(),
   days: Joi.array() // Days of the week as an array of valid strings
-    .items(Joi.string().valid("mon", "tue", "wed", "thu", "fri", "sat", "sun"))
+    .items(Joi.string().valid("MO", "TU", "WE", "TH", "FR", "SA", "SU"))
     .min(1)
     .unique()
     .required(),
