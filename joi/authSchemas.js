@@ -5,6 +5,7 @@ import {
   systemsSchema,
   playstylesSchema,
   experience,
+  playingRole,
 } from "./preferenceSchemas.js";
 
 export const signUpSchema = Joi.object({
@@ -24,9 +25,6 @@ export const signUpSchema = Joi.object({
   country: Joi.string().required(),
   experience: experience,
   systems: Joi.array().items(systemsSchema).min(1).required(),
-  playstyles: Joi.array().items(playstylesSchema).min(1).required(),
-  likes: Joi.array().items(likesSchema).min(1).required(),
-  dislikes: Joi.array().items(dislikesSchema).min(1).required(),
   days: Joi.array() // Days of the week as an array of valid strings
     .items(Joi.string().valid("MO", "TU", "WE", "TH", "FR", "SA", "SU"))
     .min(1)
@@ -37,8 +35,12 @@ export const signUpSchema = Joi.object({
     .min(1)
     .max(31) // To allow max one play per day
     .required(),
-  tagline: Joi.string().max(150).required(),
-  description: Joi.string().max(500).required(),
+  playingRole: Joi.array().items(playingRole).default([]),
+  playstyles: Joi.array().items(playstylesSchema).default([]),
+  likes: Joi.array().items(likesSchema).default([]),
+  dislikes: Joi.array().items(dislikesSchema).default([]),
+  tagline: Joi.string().max(150).optional().allow(""),
+  description: Joi.string().max(500).optional().allow(""),
   groups: Joi.array().items(Joi.string().hex().length(24)).default([]), // Assuming groups are stored as ObjectId strings
 });
 

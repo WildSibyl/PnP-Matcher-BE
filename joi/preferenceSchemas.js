@@ -40,3 +40,5 @@ export const experience = Joi.string().valid(
   "Adventurer: I know my game",
   "Hero: P&P is my life"
 );
+
+export const playingRole = Joi.string().valid("Game Master", "Player");
