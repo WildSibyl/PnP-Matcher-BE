@@ -27,11 +27,6 @@ const groupSchema = new Schema({
     default: [],
     required: [true, "Game systems is required"],
   },
-  playstyles: {
-    type: [String],
-    default: [],
-    required: [true, "Playstyle is required"],
-  },
   days: {
     type: [String],
     enum: ["MO", "TU", "WE", "TH", "FR", "SA", "SU"],
@@ -42,6 +37,11 @@ const groupSchema = new Schema({
     min: 1,
     max: 31,
     required: [true, "Frequency per month is required"],
+  },
+  playstyles: {
+    type: [String],
+    default: [],
+    required: [true, "Playstyle is required"],
   },
   content: { type: String, required: [true, "Body is required"] },
   likes: {

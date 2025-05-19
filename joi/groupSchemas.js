@@ -20,7 +20,6 @@ export const groupSchema = Joi.object({
   zipCode: Joi.string().required(),
   country: Joi.string().required(),
   systems: Joi.array().items(systemsSchema).min(1).required(),
-  playstyles: Joi.array().items(playstylesSchema).min(1).required(),
   days: Joi.array() // Days of the week as an array of valid strings
     .items(Joi.string().valid("MO", "TU", "WE", "TH", "FR", "SA", "SU"))
     .min(1)
@@ -31,6 +30,7 @@ export const groupSchema = Joi.object({
     .min(1)
     .max(31) // To allow max one play per day
     .required(),
+  playstyles: Joi.array().items(playstylesSchema).min(1).required(),
   likes: Joi.array().items(likesSchema).min(1).required(),
   dislikes: Joi.array().items(dislikesSchema).min(1).required(),
   members: Joi.array().items(Joi.string()).default([]),

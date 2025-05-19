@@ -32,21 +32,6 @@ const userSchema = new Schema({
     default: [],
     required: [true, "Game systems is required"],
   },
-  playstyles: {
-    type: [String],
-    default: [],
-    required: [true, "Playstyle is required"],
-  },
-  likes: {
-    type: [String],
-    default: [],
-    required: [true, "Likes are required"],
-  },
-  dislikes: {
-    type: [String],
-    default: [],
-    required: [true, "Dislikes are required"],
-  },
   days: {
     type: [String],
     enum: ["MO", "TU", "WE", "TH", "FR", "SA", "SU"],
@@ -58,14 +43,28 @@ const userSchema = new Schema({
     max: 31,
     required: [true, "Frequency per month is required"],
   },
+  playingRole: {
+    type: [String],
+    default: [],
+  },
+  playstyles: {
+    type: [String],
+    default: [],
+  },
+  likes: {
+    type: [String],
+    default: [],
+  },
+  dislikes: {
+    type: [String],
+    default: [],
+  },
   tagline: {
     type: String,
-    required: [true, "Tagline is required"],
     maxLength: 150,
   },
   description: {
     type: String,
-    required: [true, "description is required"],
     maxLength: 500,
   },
   groups: [
