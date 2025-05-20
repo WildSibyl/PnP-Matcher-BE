@@ -22,6 +22,15 @@ const groupSchema = new Schema({
   description: { type: String, required: [true, "Description is required"] },
   zipCode: { type: String, required: [true, "Zip code is required"] },
   country: { type: String, required: [true, "Country is required"] },
+  experience: {
+    type: [String],
+    enum: [
+      "Rookie: Getting to know P&P",
+      "Adventurer: I know my game",
+      "Hero: P&P is my life",
+    ],
+    required: [true, "Experience is required"],
+  },
   systems: {
     type: [String],
     default: [],
@@ -38,12 +47,16 @@ const groupSchema = new Schema({
     max: 31,
     required: [true, "Frequency per month is required"],
   },
+  languages: {
+    type: [String],
+    default: [],
+    required: [true, "Language is required"],
+  },
   playstyles: {
     type: [String],
     default: [],
     required: [true, "Playstyle is required"],
   },
-  content: { type: String, required: [true, "Body is required"] },
   likes: {
     type: [String],
     default: [],
@@ -53,6 +66,16 @@ const groupSchema = new Schema({
     type: [String],
     default: [],
     required: [true, "Dislikes are required"],
+  },
+  tagline: {
+    type: String,
+    maxLength: 150,
+    required: [true, "Tagline is required"],
+  },
+  description: {
+    type: String,
+    maxLength: 500,
+    required: [true, "Body is required"],
   },
   members: {
     type: [String],

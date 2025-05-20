@@ -43,12 +43,17 @@ const userSchema = new Schema({
     max: 31,
     required: [true, "Frequency per month is required"],
   },
+  languages: {
+    type: [String],
+    default: [],
+  },
   playingRole: {
     type: [String],
     default: [],
   },
   playstyles: {
     type: [String],
+    //change type: String to Objectid of the playstyle schema
     default: [],
   },
   likes: {
