@@ -1,10 +1,4 @@
 import Joi from "joi";
-import {
-  likesSchema,
-  dislikesSchema,
-  systemsSchema,
-  playstylesSchema,
-} from "./preferenceSchemas.js";
 
 export const groupSchema = Joi.object({
   author: Joi.string(),
@@ -16,10 +10,10 @@ export const groupSchema = Joi.object({
       "string.pattern.base":
         "Image must be a valid URL ending in .jpeg, .jpg, .png, .gif, or .webp",
     }),
-  description: Joi.string().required(),
-  zipCode: Joi.string().required(),
-  country: Joi.string().required(),
-  systems: Joi.array().items(systemsSchema).min(1).required(),
+  zipCode: Joi.string(),
+  country: Joi.string(),
+  experience: Joi.array().items(Joi.string()).min(1).required(),
+  systems: Joi.array().items(Joi.string()).min(1).required(),
   days: Joi.array() // Days of the week as an array of valid strings
     .items(Joi.string().valid("MO", "TU", "WE", "TH", "FR", "SA", "SU"))
     .min(1)
@@ -30,9 +24,12 @@ export const groupSchema = Joi.object({
     .min(1)
     .max(31) // To allow max one play per day
     .required(),
-  playstyles: Joi.array().items(playstylesSchema).min(1).required(),
-  likes: Joi.array().items(likesSchema).min(1).required(),
-  dislikes: Joi.array().items(dislikesSchema).min(1).required(),
+  languages: Joi.array().items(Joi.string()).default([]),
+  playstyles: Joi.array().items(Joi.string()).default([]),
+  likes: Joi.array().items(Joi.string()).default([]),
+  dislikes: Joi.array().items(Joi.string()).default([]),
+  tagline: Joi.string().max(150).optional().allow(""),
+  description: Joi.string().max(500).optional().allow(""),
   members: Joi.array().items(Joi.string()).default([]),
   maxMembers: Joi.number().integer().min(1).max(30).required(),
 }).custom((obj, helpers) => {
