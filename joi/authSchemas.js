@@ -15,7 +15,7 @@ export const signUpSchema = Joi.object({
     .required(),
   zipCode: Joi.string().required(),
   country: Joi.string().required(),
-  experience: Joi.array().items(Joi.string()).min(1).required(),
+  experience: Joi.string().required(),
   systems: Joi.array().items(Joi.string()).min(1).required(),
   days: Joi.array() // Days of the week as an array of valid strings
     .items(Joi.string().valid("MO", "TU", "WE", "TH", "FR", "SA", "SU"))
