@@ -13,8 +13,12 @@ export const signUpSchema = Joi.object({
       Joi.string().isoDate()
     )
     .required(),
-  zipCode: Joi.string().required(),
-  country: Joi.string().required(),
+  address: Joi.object({
+    street: Joi.string().required(),
+    houseNumber: Joi.string().required(),
+    postalCode: Joi.string().required(),
+    city: Joi.string().required(),
+  }).required(),
   experience: Joi.string().required(),
   systems: Joi.array().items(Joi.string()).min(1).required(),
   days: Joi.array() // Days of the week as an array of valid strings

@@ -2,6 +2,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 import ErrorResponse from "../utils/ErrorResponse.js";
+import { getCoordinates } from "../utils/getCoordinates.js";
 
 export const me = async (req, res) => {
   const user = await User.findById(req.userId);
@@ -17,8 +18,7 @@ export const signUp = async (req, res) => {
     email,
     password,
     birthday,
-    zipCode,
-    country,
+    address,
     experience,
     systems = [],
     days = [],
@@ -37,13 +37,19 @@ export const signUp = async (req, res) => {
 
   const hashedPassword = await bcrypt.hash(password, 10);
 
+  const { lat, lng } = await getCoordinates(address);
+
   const newUser = await User.create({
     userName,
     email,
     password: hashedPassword,
     birthday,
-    zipCode,
-    country,
+    address: {
+      ...address,
+      location: {
+        coordinates: [lng, lat], //Always longitude first and then latitude
+      },
+    },
     experience,
     systems,
     days,
