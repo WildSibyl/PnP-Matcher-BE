@@ -16,8 +16,24 @@ const userSchema = new Schema({
     select: false,
   },
   birthday: { type: Date, required: [true, "Birthday is required"] },
-  zipCode: { type: String, required: [true, "Zip code is required"] },
-  country: { type: String, required: [true, "Country is required"] },
+  address: {
+    street: { type: String, required: true },
+    houseNumber: { type: String, required: true },
+    postalCode: { type: String, required: true },
+    city: { type: String, required: true },
+    location: {
+      type: {
+        type: String,
+        enum: ["Point"],
+        default: "Point",
+        required: true,
+      },
+      coordinates: {
+        type: [Number], //[longitude, latitude]
+        required: true,
+      },
+    },
+  },
   experience: {
     type: String,
     enum: [
@@ -81,5 +97,7 @@ const userSchema = new Schema({
   ],
   createdAt: { type: Date, default: Date.now },
 });
+
+userSchema.index({ "address.location": "2dsphere" }); //Create index
 
 export default model("User", userSchema);
