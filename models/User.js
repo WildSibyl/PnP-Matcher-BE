@@ -57,11 +57,19 @@ const userSchema = new Schema({
     max: 31,
     required: [true, "Frequency per month is required"],
   },
+  terms: {
+    type: Boolean,
+    required: [true, "Terms and conditions must be accepted"],
+  },
   languages: {
     type: [String],
     default: [],
   },
   playingRole: {
+    type: [String],
+    default: [],
+  },
+  playingModes: {
     type: [String],
     default: [],
   },
