@@ -8,13 +8,8 @@ const minDate = new Date("1900-01-01");
 const maxDate = new Date();
 maxDate.setFullYear(maxDate.getFullYear() - 5);
 
-export const signUpSchema = Joi.object({
+export const profileUpdateSchema = Joi.object({
   userName: Joi.string().lowercase().trim().required(),
-  email: Joi.string().email().lowercase().trim().required(),
-  password: Joi.string().min(8).required(),
-  confirmPassword: Joi.any().valid(Joi.ref("password")).required().messages({
-    "any.only": "Passwords do not match",
-  }),
   birthday: Joi.string()
     .isoDate()
     .custom((value, helpers) => {
@@ -53,7 +48,6 @@ export const signUpSchema = Joi.object({
     .min(1)
     .max(31) // To allow max one play per day
     .required(),
-  terms: Joi.boolean().valid(true).required(),
   playingRoles: Joi.array().items(objectId).default([]),
   playingModes: objectId.required(),
   languages: Joi.array().items(objectId).default([]),
@@ -62,26 +56,4 @@ export const signUpSchema = Joi.object({
   dislikes: Joi.array().items(objectId).default([]),
   tagline: Joi.string().max(150).optional().allow(""),
   description: Joi.string().max(500).optional().allow(""),
-  groups: Joi.array().items(objectId).default([]),
-});
-
-export const signInSchema = Joi.object({
-  email: Joi.string().email().lowercase().trim().required(),
-  password: Joi.string().alphanum().min(8).required(),
-});
-
-export const changeEmailSchema = Joi.object({
-  newEmail: Joi.string().email().required(),
-  password: Joi.string().required(),
-});
-
-export const changePasswordSchema = Joi.object({
-  currentPassword: Joi.string().required(),
-  newPassword: Joi.string().min(8).required(),
-  confirmPassword: Joi.string()
-    .valid(Joi.ref("newPassword"))
-    .required()
-    .messages({
-      "any.only": "New password and confirmation do not match",
-    }),
 });

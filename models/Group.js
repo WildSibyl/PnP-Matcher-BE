@@ -19,20 +19,34 @@ const groupSchema = new Schema({
       message: (props) => `${props.value} is not a valid image file.`,
     },
   },
-  description: { type: String, required: [true, "Description is required"] },
-  zipCode: { type: String, required: [true, "Zip code is required"] },
-  country: { type: String, required: [true, "Country is required"] },
+  address: {
+    street: { type: String },
+    houseNumber: { type: String },
+    postalCode: { type: String },
+    city: { type: String },
+    location: {
+      type: {
+        type: String,
+        enum: ["Point"],
+        default: "Point",
+      },
+      coordinates: {
+        type: [Number], //[longitude, latitude]
+      },
+    },
+  },
   experience: {
-    type: [String],
-    enum: [
-      "Rookie: Getting to know P&P",
-      "Adventurer: I know my game",
-      "Hero: P&P is my life",
-    ],
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Option",
     required: [true, "Experience is required"],
   },
   systems: {
-    type: [String],
+    type: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Option",
+      },
+    ],
     default: [],
     required: [true, "Game systems is required"],
   },
@@ -47,38 +61,59 @@ const groupSchema = new Schema({
     max: 31,
     required: [true, "Frequency per month is required"],
   },
+  playingModes: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Option",
+    required: [true, "Playing mode is required"],
+  },
   languages: {
-    type: [String],
+    type: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Option",
+      },
+    ],
     default: [],
     required: [true, "Language is required"],
   },
   playstyles: {
-    type: [String],
+    type: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Option",
+      },
+    ],
     default: [],
     required: [true, "Playstyle is required"],
   },
   likes: {
-    type: [String],
+    type: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Option",
+      },
+    ],
     default: [],
-    required: [true, "Likes are required"],
   },
   dislikes: {
-    type: [String],
+    type: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Option",
+      },
+    ],
     default: [],
-    required: [true, "Dislikes are required"],
   },
   tagline: {
     type: String,
     maxLength: 150,
-    required: [true, "Tagline is required"],
   },
   description: {
     type: String,
     maxLength: 500,
-    required: [true, "Body is required"],
   },
   members: {
-    type: [String],
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     default: [],
     validate: {
       validator: function (value) {
@@ -96,5 +131,7 @@ const groupSchema = new Schema({
   },
   createdAt: { type: Date, default: Date.now },
 });
+
+groupSchema.index({ "address.location": "2dsphere" });
 
 export default model("Group", groupSchema);
