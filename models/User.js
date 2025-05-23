@@ -89,6 +89,7 @@ const userSchema = new Schema({
   playingModes: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Option",
+    default: null,
   },
   playstyles: {
     type: [

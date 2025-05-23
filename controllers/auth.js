@@ -27,7 +27,7 @@ export const signUp = async (req, res) => {
       terms = false,
       languages = [],
       playingRoles = [],
-      playingModes = [],
+      playingModes,
       playstyles = [],
       likes = [],
       dislikes = [],

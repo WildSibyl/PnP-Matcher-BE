@@ -36,10 +36,10 @@ export const signUpSchema = Joi.object({
     houseNumber: Joi.string().required(),
     postalCode: Joi.string().required(),
     city: Joi.string().required(),
-    location: Joi.object({
-      type: Joi.string().valid("Point").required(),
-      coordinates: Joi.array().length(2).items(Joi.number()).required(), // [lng, lat]
-    }),
+    // location: Joi.object({
+    //   type: Joi.string().valid("Point").required(),
+    //   coordinates: Joi.array().length(2).items(Joi.number()).required(), // [lng, lat]
+    //}),
   }).required(),
   experience: objectId.required(),
   systems: Joi.array().items(objectId).min(1).required(),
@@ -55,7 +55,7 @@ export const signUpSchema = Joi.object({
     .required(),
   terms: Joi.boolean().valid(true).required(),
   playingRoles: Joi.array().items(objectId).default([]),
-  playingModes: objectId.required(),
+  playingModes: objectId.optional().allow(null, ""),
   languages: Joi.array().items(objectId).default([]),
   playstyles: Joi.array().items(objectId).default([]),
   likes: Joi.array().items(objectId).default([]),
