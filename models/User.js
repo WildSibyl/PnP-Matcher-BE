@@ -2,7 +2,13 @@ import mongoose from "mongoose";
 const { Schema, model } = mongoose;
 
 const userSchema = new Schema({
-  userName: { type: String, required: [true, "Username is required"] },
+  userName: {
+    type: String,
+    required: [true, "Username is required"],
+    unique: true, // This creates a unique index on the username field
+    lowercase: true,
+    trim: true,
+  },
   email: {
     type: String,
     required: [true, "Email is required"],
@@ -33,16 +39,17 @@ const userSchema = new Schema({
     },
   },
   experience: {
-    type: String,
-    enum: [
-      "Rookie: Getting to know P&P",
-      "Adventurer: I know my game",
-      "Hero: P&P is my life",
-    ],
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Option",
     required: [true, "Experience is required"],
   },
   systems: {
-    type: [String],
+    type: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Option",
+      },
+    ],
     default: [],
     required: [true, "Game systems is required"],
   },
@@ -62,28 +69,53 @@ const userSchema = new Schema({
     required: [true, "Terms and conditions must be accepted"],
   },
   languages: {
-    type: [String],
+    type: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Option",
+      },
+    ],
     default: [],
   },
-  playingRole: {
-    type: [String],
+  playingRoles: {
+    type: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Option",
+      },
+    ],
     default: [],
   },
   playingModes: {
-    type: [String],
-    default: [],
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Option",
+    default: null,
   },
   playstyles: {
-    type: [String],
-    //change type: String to Objectid of the playstyle schema
+    type: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Option",
+      },
+    ],
     default: [],
   },
   likes: {
-    type: [String],
+    type: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Option",
+      },
+    ],
     default: [],
   },
   dislikes: {
-    type: [String],
+    type: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Option",
+      },
+    ],
     default: [],
   },
   tagline: {
@@ -94,13 +126,16 @@ const userSchema = new Schema({
     type: String,
     maxLength: 500,
   },
-  groups: [
+  groups: {
     // populated by User.findById(id).populate('groups')
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Group",
-    },
-  ],
+    type: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Group",
+      },
+    ],
+    default: [],
+  },
   createdAt: { type: Date, default: Date.now },
 });
 

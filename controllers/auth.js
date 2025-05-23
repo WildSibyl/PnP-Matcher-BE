@@ -10,83 +10,101 @@ export const me = async (req, res) => {
 };
 
 export const signUp = async (req, res) => {
-  console.log("SignUp endpoint hit");
-  console.log("Signup payload:", req.body);
+  try {
+    console.log("SignUp endpoint hit");
+    console.log("Signup payload:", req.body);
 
-  const {
-    userName,
-    email,
-    password,
-    birthday,
-    address,
-    experience,
-    systems = [],
-    days = [],
-    frequencyPerMonth,
-    terms = false,
-    languages = [],
-    playingRoles = [],
-    playingModes = [],
-    playstyles = [],
-    likes = [],
-    dislikes = [],
-    tagline,
-    description,
-  } = req.body;
+    const {
+      userName,
+      email,
+      password,
+      birthday,
+      address,
+      experience,
+      systems = [],
+      days = [],
+      frequencyPerMonth,
+      terms = false,
+      languages = [],
+      playingRoles = [],
+      playingModes,
+      playstyles = [],
+      likes = [],
+      dislikes = [],
+      tagline,
+      description,
+    } = req.body;
 
-  const userExists = await User.findOne({ email });
-  if (userExists) throw new ErrorResponse("User already exists", 409);
+    // Pre-check username
+    const userNameExists = await User.findOne({ userName });
+    if (userNameExists) throw new ErrorResponse("Username already taken", 409);
 
-  const hashedPassword = await bcrypt.hash(password, 10);
+    // Pre-check email
+    const userExists = await User.findOne({ email });
+    if (userExists) throw new ErrorResponse("Email already registered", 409);
 
-  const { lat, lng } = await getCoordinates(address);
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-  const newUser = await User.create({
-    userName,
-    email,
-    password: hashedPassword,
-    birthday,
-    address: {
-      ...address,
-      location: {
-        coordinates: [lng, lat], //Always longitude first and then latitude
+    const { lat, lng } = await getCoordinates(address);
+
+    const newUser = await User.create({
+      userName,
+      email,
+      password: hashedPassword,
+      birthday,
+      address: {
+        ...address,
+        location: {
+          coordinates: [lng, lat], //Always longitude first and then latitude
+        },
       },
-    },
-    experience,
-    systems,
-    days,
-    frequencyPerMonth,
-    terms,
-    languages,
-    playingRoles,
-    playingModes,
-    playstyles,
-    likes,
-    dislikes,
-    tagline,
-    description,
-  });
+      experience,
+      systems,
+      days,
+      frequencyPerMonth,
+      terms,
+      languages,
+      playingRoles,
+      playingModes,
+      playstyles,
+      likes,
+      dislikes,
+      tagline,
+      description,
+    });
 
-  const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, {
-    expiresIn: "7d",
-  });
+    const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, {
+      expiresIn: "7d",
+    });
 
-  const isProduction = process.env.NODE_ENV === "production";
-  const cookieOptions = {
-    httpOnly: true,
-    secure: isProduction,
-    sameSite: isProduction ? "None" : "Lax",
-    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-  };
+    const isProduction = process.env.NODE_ENV === "production";
+    const cookieOptions = {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: isProduction ? "None" : "Lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    };
 
-  res.cookie("token", token, cookieOptions);
+    res.cookie("token", token, cookieOptions);
 
-  res.status(201).json({
-    id: newUser._id,
-    userName: newUser.userName,
-    email: newUser.email,
-    createdAt: newUser.createdAt,
-  });
+    res.status(201).json({
+      id: newUser._id,
+      userName: newUser.userName,
+      email: newUser.email,
+      createdAt: newUser.createdAt,
+    });
+  } catch (error) {
+    if (error.code === 11000) {
+      if (error.keyPattern.userName) {
+        return res.status(409).json({ message: "Username already taken" });
+      }
+      if (error.keyPattern.email) {
+        return res.status(409).json({ message: "Email already registered" });
+      }
+    }
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
 };
 
 export const signIn = async (req, res) => {

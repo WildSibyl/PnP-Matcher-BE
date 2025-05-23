@@ -9,6 +9,7 @@ const optionSchema = new mongoose.Schema({
       "experience",
       "systems",
       "playingRoles",
+      "playingModes",
       "languages",
       "playstyles",
       "likes",
