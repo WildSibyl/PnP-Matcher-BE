@@ -9,7 +9,10 @@ const maxDate = new Date();
 maxDate.setFullYear(maxDate.getFullYear() - 5);
 
 export const profileUpdateSchema = Joi.object({
-  userName: Joi.string().lowercase().trim().required(),
+  userName: Joi.string()
+    .trim()
+    .pattern(/^[A-Za-z\s]+$/, "letters and spaces")
+    .required(),
   birthday: Joi.string()
     .isoDate()
     .custom((value, helpers) => {

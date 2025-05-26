@@ -9,7 +9,10 @@ const maxDate = new Date();
 maxDate.setFullYear(maxDate.getFullYear() - 5);
 
 export const signUpSchema = Joi.object({
-  userName: Joi.string().trim().required(),
+  userName: Joi.string()
+    .trim()
+    .pattern(/^[A-Za-z\s]+$/, "letters and spaces")
+    .required(),
   email: Joi.string().email().lowercase().trim().required(),
   password: Joi.string().min(8).required(),
   confirmPassword: Joi.any().valid(Joi.ref("password")).required().messages({
