@@ -6,6 +6,7 @@ import groupsRouter from "./routes/groupsRouter.js";
 import authRouter from "./routes/authRouter.js";
 import optionsRouter from "./routes/optionsRouter.js";
 import usersRouter from "./routes/usersRouter.js";
+import usernameRouter from "./routes/usernameRouter.js";
 import errorHandler from "./middlewares/errorHandler.js";
 
 const app = express();
@@ -19,6 +20,7 @@ app.use("/auth", authRouter);
 app.use("/groups", groupsRouter);
 app.use("/options", optionsRouter);
 app.use("/users", usersRouter);
+app.use("/check-username", usernameRouter);
 app.use("/*splat", (req, res) => res.status(404).json({ error: "Not found" })); //express v5 uses this to handle 404 errors from any routes
 
 app.use(errorHandler);

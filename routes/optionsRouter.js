@@ -9,7 +9,7 @@ const optionsRouter = Router();
 optionsRouter.route("/").get(getAllOptions);
 //.post(validateSchema(optionSchema), verifyToken, createOption);
 
-optionsRouter;
+//optionsRouter;
 //.route("/:id")
 //.get(getSingleOption)
 //.put(validateSchema(optionSchema), verifyToken, updateOption)
