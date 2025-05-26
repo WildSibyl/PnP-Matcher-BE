@@ -6,8 +6,13 @@ const userSchema = new Schema({
     type: String,
     required: [true, "Username is required"],
     unique: true, // This creates a unique index on the username field
-    lowercase: true,
     trim: true,
+    validate: {
+      validator: function (v) {
+        return /^[A-Za-z\s]+$/.test(v);
+      },
+      message: "Username can only contain letters and spaces",
+    },
   },
   email: {
     type: String,

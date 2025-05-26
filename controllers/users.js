@@ -126,3 +126,23 @@ export const deleteUser = async (req, res) => {
 
   res.send(user);
 };
+
+//different endpoint to check username availability, but still in the users controller
+export const checkUsernameAvailability = async (req, res) => {
+  const { username } = req.query;
+
+  if (!username) {
+    return res.status(400).json({ error: "Username is required" });
+  }
+
+  try {
+    const existingUser = await User.findOne({
+      userName: { $regex: `^${username}$`, $options: "i" }, // case-insensitive match
+    });
+
+    res.json({ isAvailable: !existingUser });
+  } catch (err) {
+    console.error("Error checking username:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+};
