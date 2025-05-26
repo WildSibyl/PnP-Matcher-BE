@@ -137,7 +137,7 @@ export const checkUsernameAvailability = async (req, res) => {
 
   try {
     const existingUser = await User.findOne({
-      userName: { $regex: `^${username}$`, $options: "i" },
+      userName: { $regex: `^${username}$`, $options: "i" }, // case-insensitive match
     });
 
     res.json({ isAvailable: !existingUser });
