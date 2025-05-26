@@ -66,6 +66,91 @@ export const getAllUsers = async (req, res) => {
   }
 };
 
+export const getFilteredUsers = async (req, res) => {
+  const { radius = 5000 } = req.query;
+  const userId = req.userId;
+  const {
+    systems = [],
+    playstyles = [],
+    experience = [],
+    likes = [],
+    dislikes = [],
+    weekdays = [],
+    playMode = "",
+    frequency = 0,
+  } = req.body;
+
+  try {
+    // Get the requesting user's location
+    const currentUser = await User.findById(userId);
+
+    if (!currentUser || !currentUser.address?.location?.coordinates) {
+      return res.status(400).json({ error: "User location not available" });
+    }
+
+    const [lng, lat] = currentUser.address.location.coordinates;
+
+    // 2. Build query
+    const query = {
+      _id: { $ne: userId }, // Exclude the current user with not equal operator
+      "address.location": {
+        $near: {
+          $geometry: {
+            type: "Point",
+            coordinates: [lng, lat], // reversed coordinates for MongoDB
+          },
+          $maxDistance: parseInt(radius),
+        },
+      },
+    };
+
+    // Convert string IDs to ObjectId for filters referencing populated fields
+    const toObjectIdArray = (arr) =>
+      arr.filter(Boolean).map((id) => new Types.ObjectId(id));
+
+    if (systems.length) query.systems = { $in: toObjectIdArray(systems) }; // In operator checks for any mentioned element in the array
+    if (playstyles.length)
+      query.playstyles = { $in: toObjectIdArray(playstyles) };
+    if (experience.length)
+      query.experience = { $in: toObjectIdArray(experience) };
+    if (likes.length) query.likes = { $in: toObjectIdArray(likes) };
+    if (dislikes.length) query.dislikes = { $in: toObjectIdArray(dislikes) };
+    if (weekdays.length) query.weekdays = { $in: weekdays };
+    if (playMode) query.playingModes = new Types.ObjectId(playMode);
+    if (frequency > 0) query.frequency = { $gte: frequency }; // Greater than or equal to frequency
+
+    // Location (fallback to Hamburg center)
+    query["address.location"] = {
+      $near: {
+        $geometry: {
+          type: "Point",
+          coordinates: [9.993682, 53.551086], // default center
+        },
+        $maxDistance: parseInt(radius),
+      },
+    };
+
+    const users = await User.find(query)
+      .populate("experience")
+      .populate("systems")
+      .populate("languages")
+      .populate("playingRoles")
+      .populate("playingModes")
+      .populate("playstyles")
+      .populate("likes")
+      .populate("dislikes");
+
+    if (!users.length) {
+      return res.status(404).json({ message: "No users found" });
+    }
+
+    res.status(200).json(users);
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 export const getSingleUser = async (req, res) => {
   const {
     params: { id },
