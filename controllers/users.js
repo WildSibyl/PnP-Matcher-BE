@@ -68,19 +68,23 @@ export const getAllUsers = async (req, res) => {
 
 export const getFilteredUsers = async (req, res) => {
   const {
-    radius = 5000,
+    search = "",
     systems = [],
     playstyles = [],
     experience = [],
     likes = [],
-    languages = [],
     dislikes = [],
+    radius = 5000,
     weekdays = [],
     playingModes = "",
     frequencyPerMonth = 0,
-  } = req.query;
+    languages = [],
+    age = "",
+  } = req.body;
 
   const userId = req.userId;
+
+  //console.log("User ID:", userId);
 
   try {
     // Get the requesting user's location
@@ -92,7 +96,7 @@ export const getFilteredUsers = async (req, res) => {
 
     const [lng, lat] = currentUser.address.location.coordinates;
 
-    // 2. Build query
+    // Build query
     const query = {
       _id: { $ne: userId }, // Exclude the current user with not equal operator
       "address.location": {
@@ -110,6 +114,13 @@ export const getFilteredUsers = async (req, res) => {
     const toObjectIdArray = (arr) =>
       arr.filter(Boolean).map((id) => new Types.ObjectId(id));
 
+    if (search.trim() !== "") {
+      query.$or = [
+        { userName: { $regex: search, $options: "i" } },
+        { tagline: { $regex: search, $options: "i" } },
+        { description: { $regex: search, $options: "i" } },
+      ];
+    }
     if (systems.length) query.systems = { $in: toObjectIdArray(systems) }; // In operator checks for any mentioned element in the array
     if (playstyles.length)
       query.playstyles = { $in: toObjectIdArray(playstyles) };
@@ -119,7 +130,58 @@ export const getFilteredUsers = async (req, res) => {
     if (dislikes.length) query.dislikes = { $in: toObjectIdArray(dislikes) };
     if (weekdays.length) query.weekdays = { $in: weekdays };
     if (playingModes) query.playingModes = new Types.ObjectId(playingModes);
-    if (frequency > 0) query.frequency = { $gte: frequencyPerMonth }; // Greater than or equal to frequency
+    if (frequencyPerMonth > 0)
+      query.frequencyPerMonth = { $gte: frequencyPerMonth }; // Greater than or equal to frequency
+    if (languages.length) query.languages = { $in: toObjectIdArray(languages) };
+    if (age) {
+      const today = new Date();
+      let minDate, maxDate;
+
+      switch (age) {
+        case "Younger than 20":
+          minDate = new Date(
+            today.getFullYear() - 20,
+            today.getMonth(),
+            today.getDate()
+          );
+          query.birthday = { $gte: minDate };
+          break;
+        case "20 - 30":
+          minDate = new Date(
+            today.getFullYear() - 30,
+            today.getMonth(),
+            today.getDate()
+          );
+          maxDate = new Date(
+            today.getFullYear() - 20,
+            today.getMonth(),
+            today.getDate()
+          );
+          query.birthday = { $gte: minDate, $lte: maxDate };
+          break;
+        case "30 - 40":
+          minDate = new Date(
+            today.getFullYear() - 40,
+            today.getMonth(),
+            today.getDate()
+          );
+          maxDate = new Date(
+            today.getFullYear() - 30,
+            today.getMonth(),
+            today.getDate()
+          );
+          query.birthday = { $gte: minDate, $lte: maxDate };
+          break;
+        case "50 and older":
+          maxDate = new Date(
+            today.getFullYear() - 50,
+            today.getMonth(),
+            today.getDate()
+          );
+          query.birthday = { $lte: maxDate };
+          break;
+      }
+    }
 
     // Location (fallback to Hamburg center)
     // query["address.location"] = {
