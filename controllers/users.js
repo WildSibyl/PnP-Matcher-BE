@@ -67,18 +67,20 @@ export const getAllUsers = async (req, res) => {
 };
 
 export const getFilteredUsers = async (req, res) => {
-  const { radius = 5000 } = req.query;
-  const userId = req.userId;
   const {
+    radius = 5000,
     systems = [],
     playstyles = [],
     experience = [],
     likes = [],
+    languages = [],
     dislikes = [],
     weekdays = [],
-    playMode = "",
-    frequency = 0,
-  } = req.body;
+    playingModes = "",
+    frequencyPerMonth = 0,
+  } = req.query;
+
+  const userId = req.userId;
 
   try {
     // Get the requesting user's location
@@ -116,19 +118,19 @@ export const getFilteredUsers = async (req, res) => {
     if (likes.length) query.likes = { $in: toObjectIdArray(likes) };
     if (dislikes.length) query.dislikes = { $in: toObjectIdArray(dislikes) };
     if (weekdays.length) query.weekdays = { $in: weekdays };
-    if (playMode) query.playingModes = new Types.ObjectId(playMode);
-    if (frequency > 0) query.frequency = { $gte: frequency }; // Greater than or equal to frequency
+    if (playingModes) query.playingModes = new Types.ObjectId(playingModes);
+    if (frequency > 0) query.frequency = { $gte: frequencyPerMonth }; // Greater than or equal to frequency
 
     // Location (fallback to Hamburg center)
-    query["address.location"] = {
-      $near: {
-        $geometry: {
-          type: "Point",
-          coordinates: [9.993682, 53.551086], // default center
-        },
-        $maxDistance: parseInt(radius),
-      },
-    };
+    // query["address.location"] = {
+    //   $near: {
+    //     $geometry: {
+    //       type: "Point",
+    //       coordinates: [9.993682, 53.551086], // default center
+    //     },
+    //     $maxDistance: parseInt(radius),
+    //   },
+    // };
 
     const users = await User.find(query)
       .populate("experience")
