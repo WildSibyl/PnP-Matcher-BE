@@ -4,7 +4,8 @@ const calculateMatchScore = (userA, userB, distance) => {
   const maxScore = 99;
   const medFilter = 10; //max points for a filter with medium weight
   const hiFilter = 15; //max points for a filter with high weight
-  const deductFilter = 5; //max point that will be deducted in the like/dislike check
+  const deductFilter = 5; //points that will be deducted for each like/dislike clash
+  const maxDeduct = 25; //max point that will be deducted in the like/dislike check
 
   const scoreRatio = (aList, bList, weight) => {
     const unique = new Set([...aList, ...bList]).size; //Get number of unique values from user A AND B
@@ -34,7 +35,7 @@ const calculateMatchScore = (userA, userB, distance) => {
   const dislikeClashes = userA.likes.filter((item) =>
     bDislikeSet.has(item)
   ).length;
-  score -= dislikeClashes * deductFilter; //deduct points for each likes/dislikes clashes
+  score -= Math.min(dislikeClashes * deductFilter, maxDeduct); //deduct points for each likes/dislikes clashes
 
   //Check Radius
   if (distance < 10000) {
