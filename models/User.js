@@ -9,9 +9,9 @@ const userSchema = new Schema({
     trim: true,
     validate: {
       validator: function (v) {
-        return /^[A-Za-z\s]+$/.test(v);
+        return /^[A-Za-z0-9\s]+$/.test(v);
       },
-      message: "Username can only contain letters and spaces",
+      message: "Username can only contain letters, numbers, and spaces",
     },
   },
   email: {
@@ -58,7 +58,7 @@ const userSchema = new Schema({
     default: [],
     required: [true, "Game systems is required"],
   },
-  days: {
+  weekdays: {
     type: [String],
     enum: ["MO", "TU", "WE", "TH", "FR", "SA", "SU"],
     required: [true, "At least one available day is required"],

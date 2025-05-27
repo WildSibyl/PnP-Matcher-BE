@@ -50,7 +50,7 @@ const groupSchema = new Schema({
     default: [],
     required: [true, "Game systems is required"],
   },
-  days: {
+  weekdays: {
     type: [String],
     enum: ["MO", "TU", "WE", "TH", "FR", "SA", "SU"],
     required: [true, "At least one play day is required"],

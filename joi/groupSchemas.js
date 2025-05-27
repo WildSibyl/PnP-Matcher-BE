@@ -21,7 +21,7 @@ export const groupSchema = Joi.object({
   }),
   experience: objectId.required(),
   systems: Joi.array().items(objectId).min(1).required(),
-  days: Joi.array() // Days of the week as an array of valid strings
+  weekdays: Joi.array() // Days of the week as an array of valid strings
     .items(Joi.string().valid("MO", "TU", "WE", "TH", "FR", "SA", "SU"))
     .min(1)
     .unique()

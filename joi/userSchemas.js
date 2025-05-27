@@ -11,7 +11,7 @@ maxDate.setFullYear(maxDate.getFullYear() - 5);
 export const profileUpdateSchema = Joi.object({
   userName: Joi.string()
     .trim()
-    .pattern(/^[A-Za-z\s]+$/, "letters and spaces")
+    .pattern(/^[A-Za-z0-9\s]+$/, "letters, numbers, and spaces")
     .required(),
   birthday: Joi.string()
     .isoDate()
@@ -41,7 +41,7 @@ export const profileUpdateSchema = Joi.object({
   }).required(),
   experience: objectId.required(),
   systems: Joi.array().items(objectId).min(1).required(),
-  days: Joi.array() // Days of the week as an array of valid strings
+  weekdays: Joi.array() // Days of the week as an array of valid strings
     .items(Joi.string().valid("MO", "TU", "WE", "TH", "FR", "SA", "SU"))
     .min(1)
     .unique()
