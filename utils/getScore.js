@@ -1,17 +1,17 @@
 const calculateMatchScore = (userA, userB, distance) => {
   let score = 0;
-  const minScore = 0;
+  const minScore = 1;
   const maxScore = 99;
   const medFilter = 10; //max points for a filter with medium weight
   const hiFilter = 15; //max points for a filter with high weight
   const deductFilter = 5; //points that will be deducted for each like/dislike clash
   const maxDeduct = 25; //max point that will be deducted in the like/dislike check
 
-  const scoreRatio = (aList, bList, weight) => {
+  const scoreRatio = (aList = [], bList = [], weight) => {
     const unique = new Set([...aList, ...bList]).size; //Get number of unique values from user A AND B
     const bSet = new Set([...bList]); //create a set from B for easier and faster searchability
     const shared = aList.filter((item) => bSet.has(item)).length; //check number of matching values between A and B
-    const ratio = shared / unique; //How many of the total values in their profiles are shared? Returns value between 0 and 1
+    const ratio = unique === 0 ? 0 : shared / unique; //How many of the total values in their profiles are shared? Returns value between 0 and 1
     return Math.round(ratio * weight); //Set max points to get out of this category according to weight
   };
 
@@ -53,3 +53,5 @@ const calculateMatchScore = (userA, userB, distance) => {
 
   return normalizedScore;
 };
+
+export default calculateMatchScore;

@@ -1,6 +1,29 @@
 import { isValidObjectId } from "mongoose";
 import User from "../models/User.js";
 import ErrorResponse from "../utils/ErrorResponse.js";
+import { Types } from "mongoose";
+import calculateMatchScore from "../utils/getScore.js";
+
+//distance magic
+function getDistanceInMeters(lat1, lon1, lat2, lon2) {
+  const R = 6371000; // Erdradius in Metern
+  const toRad = (deg) => (deg * Math.PI) / 180;
+
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(lat1)) *
+      Math.cos(toRad(lat2)) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  const distance = R * c; // Entfernung in Metern
+  return distance;
+}
 
 export const getAllUsers = async (req, res) => {
   const { radius = 5000 } = req.query;
@@ -83,32 +106,33 @@ export const getFilteredUsers = async (req, res) => {
   } = req.body;
 
   const userId = req.userId;
+  const radiusNum = parseInt(radius);
+  console.log("USER ID ", userId);
 
   //console.log("User ID:", userId);
 
   try {
-    // Get the requesting user's location
-    const currentUser = await User.findById(userId);
+    const query = userId ? { _id: { $ne: userId } } : {}; //if there is a user, exclude the current user, else just give back all users
+    let currentUser = null;
 
-    if (!currentUser || !currentUser.address?.location?.coordinates) {
-      return res.status(400).json({ error: "User location not available" });
-    }
+    //Location is only used for logged in users
+    if (userId) {
+      currentUser = await User.findById(userId);
+      if (!currentUser || !currentUser.address?.location?.coordinates) {
+        return res.status(400).json({ error: "User location not available" });
+      }
 
-    const [lng, lat] = currentUser.address.location.coordinates;
-
-    // Build query
-    const query = {
-      _id: { $ne: userId }, // Exclude the current user with not equal operator
-      "address.location": {
+      const [lng, lat] = currentUser.address.location.coordinates;
+      query["address.location"] = {
         $near: {
           $geometry: {
             type: "Point",
             coordinates: [lng, lat], // reversed coordinates for MongoDB
           },
-          $maxDistance: parseInt(radius),
+          $maxDistance: radiusNum,
         },
-      },
-    };
+      };
+    }
 
     // Convert string IDs to ObjectId for filters referencing populated fields
     const toObjectIdArray = (arr) =>
@@ -208,7 +232,25 @@ export const getFilteredUsers = async (req, res) => {
       return res.status(404).json({ message: "No users found" });
     }
 
-    res.status(200).json(users);
+    //Calculate and return matchscore for each user
+    const userWithScore = users.map((user) => {
+      if (currentUser) {
+        const [long1, lat1] = currentUser.address.location.coordinates; //get currUser coordinates
+        const [long2, lat2] = user.address.location.coordinates; //get fetched user coordinates
+
+        const distance = getDistanceInMeters(lat1, long1, lat2, long2);
+
+        const matchScore = currentUser
+          ? calculateMatchScore(currentUser, user, distance)
+          : null;
+        return { ...user.toObject(), matchScore };
+      } else {
+        return { ...user.toObject(), matchScore: "Not available" };
+      }
+    });
+
+    //Give back users with matchScore
+    res.status(200).json(userWithScore);
   } catch (error) {
     console.error("Error fetching users:", error);
     res.status(500).json({ message: "Server error" });
