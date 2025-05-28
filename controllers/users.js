@@ -25,6 +25,18 @@ function getDistanceInMeters(lat1, lon1, lat2, lon2) {
   return distance;
 }
 
+//sorting magic
+async function getUsersSorted(users, sortBy, sortOrder) {
+  try {
+    const sortTheseUsers = [...users];
+    const sortedUsers = sortTheseUsers.sort((a, b) => {
+      if (!a[sortBy] || !b[sortBy]) return 0;
+      return a[sortBy] > b[sortBy] ? sortOrder : -sortOrder;
+    });
+    return sortedUsers;
+  } catch (error) {}
+}
+
 export const getAllUsers = async (req, res) => {
   const { radius = 5000 } = req.query;
   //    const userId = req.userId;
@@ -103,6 +115,7 @@ export const getFilteredUsers = async (req, res) => {
     frequencyPerMonth = 0,
     languages = [],
     age = "",
+    sortBy = "userName",
   } = req.body;
 
   const userId = req.userId;
@@ -196,9 +209,9 @@ export const getFilteredUsers = async (req, res) => {
           );
           query.birthday = { $gte: minDate, $lte: maxDate };
           break;
-        case "50 and older":
+        case "40 and older":
           maxDate = new Date(
-            today.getFullYear() - 50,
+            today.getFullYear() - 40,
             today.getMonth(),
             today.getDate()
           );
@@ -243,14 +256,21 @@ export const getFilteredUsers = async (req, res) => {
         const matchScore = currentUser
           ? calculateMatchScore(currentUser, user, distance)
           : null;
-        return { ...user.toObject(), matchScore };
+        return { ...user.toObject(), matchScore, distance };
       } else {
-        return { ...user.toObject(), matchScore: "Not available" };
+        return {
+          ...user.toObject(),
+          matchScore: "Not available",
+          distance: "Not available",
+        };
       }
     });
 
+    //Sort users
+    const sortedUsers = await getUsersSorted(userWithScore, sortBy, 1);
+
     //Give back users with matchScore
-    res.status(200).json(userWithScore);
+    res.status(200).json(sortedUsers);
   } catch (error) {
     console.error("Error fetching users:", error);
     res.status(500).json({ message: "Server error" });
