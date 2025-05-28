@@ -9,10 +9,14 @@ import {
 import validateSchema from "../middlewares/validateSchema.js";
 import { profileUpdateSchema } from "../joi/userSchemas.js";
 import verifyToken from "../middlewares/verifyToken.js";
+import verifyTokenOptional from "../middlewares/verifyTokenOptional.js";
 
 const usersRouter = Router();
 
-usersRouter.route("/").get(getAllUsers).post(verifyToken, getFilteredUsers);
+usersRouter
+  .route("/")
+  .get(getAllUsers)
+  .post(verifyTokenOptional, getFilteredUsers);
 
 usersRouter
   .route("/:id")
