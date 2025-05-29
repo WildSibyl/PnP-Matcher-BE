@@ -73,9 +73,13 @@ export const signUp = async (req, res) => {
       description,
     });
 
-    const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, {
-      expiresIn: "7d",
-    });
+    const token = jwt.sign(
+      { id: newUser._id, permission: newUser.permission },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "7d",
+      }
+    );
 
     const isProduction = process.env.NODE_ENV === "production";
     const cookieOptions = {
