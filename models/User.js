@@ -73,6 +73,26 @@ const userSchema = new Schema({
     type: Boolean,
     required: [true, "Terms and conditions must be accepted"],
   },
+  avatarUrl: {
+    type: String,
+    default: "https://i.ibb.co/F4MD88Lt/Ren-avatar.png", // Default Ren avatar URL
+    validate: {
+      validator: function (v) {
+        return /^https?:\/\/.+/.test(v); // Accept any valid URL
+      },
+      message: "Avatar URL must be a valid URL",
+    },
+  },
+  playingRoles: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Option",
+    default: null,
+  },
+  playingModes: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Option",
+    default: null,
+  },
   languages: {
     type: [
       {
@@ -81,20 +101,6 @@ const userSchema = new Schema({
       },
     ],
     default: [],
-  },
-  playingRoles: {
-    type: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Option",
-      },
-    ],
-    default: [],
-  },
-  playingModes: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Option",
-    default: null,
   },
   playstyles: {
     type: [

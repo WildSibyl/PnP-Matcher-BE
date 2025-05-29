@@ -51,6 +51,10 @@ export const profileUpdateSchema = Joi.object({
     .min(1)
     .max(31) // To allow max one play per day
     .required(),
+  avatarUrl: Joi.string()
+    .uri() // Validate URL format for avatar
+    .optional()
+    .allow(null, ""),
   playingRoles: Joi.array().items(objectId).default([]),
   playingModes: objectId.required(),
   languages: Joi.array().items(objectId).default([]),
