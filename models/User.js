@@ -137,6 +137,13 @@ const userSchema = new Schema({
     type: String,
     maxLength: 500,
   },
+
+  avatarUrl: {
+    // schema for avatar
+    type: String,
+    default: "",
+  },
+
   groups: {
     // populated by User.findById(id).populate('groups')
     type: [
