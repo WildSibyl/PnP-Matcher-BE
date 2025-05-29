@@ -357,3 +357,85 @@ export const checkUsernameAvailability = async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 };
+
+//endpoint to "roll" users for the group. returns x users within 30km with matchscore above 80 (if there are less than 8 results it will take matchscore above 70)
+export const getRollMatches = async (req, res) => {
+  const { radius = 30000 } = req.query;
+  const userId = req.userId;
+  let currentUser;
+
+  if (userId) {
+    currentUser = await User.findById(userId);
+    if (!currentUser || !currentUser.address?.location?.coordinates) {
+      return res.status(400).json({ error: "User location not available" });
+    }
+
+    try {
+      const allUsers = await User.find({
+        "address.location": {
+          $near: {
+            $geometry: {
+              type: "Point",
+              coordinates: currentUser.address.location.coordinates || [
+                9.993682, 53.551086,
+              ],
+            },
+            $maxDistance: radius, //in meters
+          },
+        },
+      })
+        .populate("experience")
+        .populate("systems")
+        .populate("languages")
+        .populate("playingRoles")
+        .populate("playingModes")
+        .populate("playstyles")
+        .populate("likes");
+
+      if (!allUsers || allUsers.length === 0) {
+        return res.status(404).json({ message: "No users found" });
+      }
+
+      //Calculate and return matchscore for each user
+      const userWithScore = allUsers.map((user) => {
+        if (currentUser) {
+          const [long1, lat1] = currentUser.address.location.coordinates; //get currUser coordinates
+          const [long2, lat2] = user.address.location.coordinates; //get fetched user coordinates
+
+          const distance = getDistanceInMeters(lat1, long1, lat2, long2);
+
+          const matchScore = currentUser
+            ? calculateMatchScore(currentUser, user, distance)
+            : null;
+          return { ...user.toObject(), matchScore, distance };
+        } else {
+          return {
+            ...user.toObject(),
+            matchScore: "Not available",
+            distance: "Not available",
+          };
+        }
+      });
+
+      const matchOver80 = userWithScore.filter((e) => e.matchScore > 80);
+      const matchOver70 = userWithScore.filter((e) => e.matchScore > 70);
+      let randomFour;
+      if (matchOver80.length > 8) {
+        //give back 4 random users with match score over 80
+        const shuffled = matchOver80.sort(() => 0.5 - Math.random());
+        randomFour = shuffled.slice(0, 4);
+      } else if (matchOver70.length > 8) {
+        //give back 4 random users with match score over 70
+        const shuffled = matchOver70.sort(() => 0.5 - Math.random());
+        randomFour = shuffled.slice(0, 4);
+      } else {
+        return res.status(404).json({ message: "Not enough users nearby" });
+      }
+
+      res.status(200).json(randomFour);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      res.status(500).json({ message: "Server error" });
+    }
+  }
+};

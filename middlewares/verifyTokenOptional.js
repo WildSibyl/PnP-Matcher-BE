@@ -7,13 +7,13 @@ const verifyTokenOptional = (req, res, next) => {
 
   console.log(token);
 
-  if (!token) next();
+  if (token) {
+    const payload = jwt.verify(token, process.env.JWT_SECRET);
 
-  const payload = jwt.verify(token, process.env.JWT_SECRET);
+    //console.log(payload);
 
-  //console.log(payload);
-
-  req.userId = payload.id; // add the user id to the request object so we can use it in the next middleware or route handler
+    req.userId = payload.id; // add the user id to the request object so we can use it in the next middleware or route handler}
+  }
 
   next();
 };

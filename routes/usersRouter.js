@@ -5,6 +5,7 @@ import {
   getSingleUser,
   updateUser,
   deleteUser,
+  getRollMatches,
 } from "../controllers/users.js";
 import validateSchema from "../middlewares/validateSchema.js";
 import { profileUpdateSchema } from "../joi/userSchemas.js";
@@ -17,6 +18,8 @@ usersRouter
   .route("/")
   .get(getAllUsers)
   .post(verifyTokenOptional, getFilteredUsers);
+
+usersRouter.route("/matches").get(verifyToken, getRollMatches);
 
 usersRouter
   .route("/:id")
