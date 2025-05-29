@@ -57,7 +57,11 @@ export const signUpSchema = Joi.object({
     .max(31) // To allow max one play per day
     .required(),
   terms: Joi.boolean().valid(true).required(),
-  playingRoles: Joi.array().items(objectId).default([]),
+  avatarUrl: Joi.string()
+    .uri() // Validate URL format for avatar
+    .optional()
+    .allow(null, ""),
+  playingRoles: objectId.optional().allow(null, ""),
   playingModes: objectId.optional().allow(null, ""),
   languages: Joi.array().items(objectId).default([]),
   playstyles: Joi.array().items(objectId).default([]),

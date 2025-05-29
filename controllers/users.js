@@ -82,6 +82,7 @@ export const getAllUsers = async (req, res) => {
         },
       },
     })
+      .populate("avatarUrl")
       .populate("experience")
       .populate("systems")
       .populate("languages")
@@ -232,6 +233,7 @@ export const getFilteredUsers = async (req, res) => {
     // };
 
     const users = await User.find(query)
+      .populate("avatarUrl")
       .populate("experience")
       .populate("systems")
       .populate("languages")
@@ -286,6 +288,7 @@ export const getSingleUser = async (req, res) => {
   if (!isValidObjectId(id)) throw new ErrorResponse("Invalid id", 400);
 
   const user = await User.findById(id)
+    .populate("avatarUrl")
     .populate("experience")
     .populate("systems")
     .populate("languages")
