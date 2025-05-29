@@ -147,6 +147,11 @@ const userSchema = new Schema({
     ],
     default: [],
   },
+  permission: {
+    type: String,
+    enum: ["user", "admin"],
+    default: "user",
+  },
   createdAt: { type: Date, default: Date.now },
 });
 

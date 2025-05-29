@@ -14,6 +14,7 @@ const verifyToken = (req, res, next) => {
   //console.log(payload);
 
   req.userId = payload.id; // add the user id to the request object so we can use it in the next middleware or route handler
+  req.userPermission = payload.permission; // add the user permission to the request object
 
   next();
 };

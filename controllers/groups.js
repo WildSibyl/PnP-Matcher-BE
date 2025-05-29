@@ -1,6 +1,7 @@
 import { isValidObjectId } from "mongoose";
 import Group from "../models/Group.js";
 import ErrorResponse from "../utils/ErrorResponse.js";
+import User from "../models/User.js";
 
 export const getAllGroups = async (req, res) => {
   const groups = await Group.find().populate("author");
@@ -49,17 +50,21 @@ export const updateGroup = async (req, res) => {
   const group = await Group.findById(id);
   if (!group)
     throw new ErrorResponse(`Group with id of ${id} doesn't exist`, 404);
-  if (group.author.toString() !== req.userId)
+
+  if (
+    group.author.toString() === req.userId ||
+    req.userPermission === "admin"
+  ) {
+    const updatedGroup = await Group.findByIdAndUpdate(id, body, {
+      new: true,
+    }).populate("author");
+    if (!updatedGroup)
+      throw new ErrorResponse(`Group with id of ${id} doesn't exist`, 404);
+
+    res.json(updatedGroup);
+  } else {
     throw new ErrorResponse("You are not authorized to update this group", 403);
-
-  const updatedGroup = await Group.findByIdAndUpdate(id, body, {
-    new: true,
-  }).populate("author");
-
-  if (!updatedGroup)
-    throw new ErrorResponse(`Group with id of ${id} doesn't exist`, 404);
-
-  res.json(updatedGroup);
+  }
 };
 
 export const deleteGroup = async (req, res) => {
@@ -72,11 +77,16 @@ export const deleteGroup = async (req, res) => {
   const group = await Group.findById(id);
   if (!group)
     throw new ErrorResponse(`Group with id of ${id} doesn't exist`, 404);
-  if (group.author.toString() !== req.userId)
+
+  if (
+    group.author.toString() === req.userId ||
+    req.userPermission === "admin"
+  ) {
+    const deletedGroup = await Group.findByIdAndDelete(id).populate("author");
+    if (!deletedGroup) throw new Error(`Group with id of ${id} doesn't exist`);
+
+    res.json({ success: `Group with id of ${id} was deleted` });
+  } else {
     throw new ErrorResponse("You are not authorized to delete this group", 403);
-
-  const deletedGroup = await Group.findByIdAndDelete(id).populate("author");
-  if (!deletedGroup) throw new Error(`Group with id of ${id} doesn't exist`);
-
-  res.json({ success: `Group with id of ${id} was deleted` });
+  }
 };

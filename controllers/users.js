@@ -314,15 +314,20 @@ export const updateUser = async (req, res) => {
   // Mongoose offers a method to check if the id is valid
   if (!isValidObjectId(id)) throw new ErrorResponse("Invalid id", 400);
 
-  const user = await User.findByIdAndUpdate(id, body, {
-    new: true,
-    runValidators: true,
-  });
+  const me = await User.findById(req.userId);
+  if (me._id.toString() === id || req.userPermission === "admin") {
+    const user = await User.findByIdAndUpdate(id, body, {
+      new: true,
+      runValidators: true,
+    });
 
-  if (!user)
-    throw new ErrorResponse(`User with id of ${id} doesn't exist`, 404);
+    if (!user)
+      throw new ErrorResponse(`User with id of ${id} doesn't exist`, 404);
 
-  res.send(user);
+    res.send(user);
+  } else {
+    throw new ErrorResponse("You are not authorized to update this user", 403);
+  }
 };
 
 export const deleteUser = async (req, res) => {
@@ -333,12 +338,17 @@ export const deleteUser = async (req, res) => {
   // Mongoose offers a method to check if the id is valid
   if (!isValidObjectId(id)) throw new ErrorResponse("Invalid id", 400);
 
-  const user = await User.findByIdAndDelete(id);
+  const me = await User.findById(req.userId);
+  if (me._id.toString() === id || req.userPermission === "admin") {
+    const user = await User.findByIdAndDelete(id);
 
-  if (!user)
-    throw new ErrorResponse(`User with id of ${id} doesn't exist`, 404);
+    if (!user)
+      throw new ErrorResponse(`User with id of ${id} doesn't exist`, 404);
 
-  res.send(user);
+    res.send(user);
+  } else {
+    throw new ErrorResponse("You are not authorized to delete this user", 403);
+  }
 };
 
 //different endpoint to check username availability, but still in the users controller
