@@ -78,9 +78,9 @@ const userSchema = new Schema({
     default: "https://i.ibb.co/F4MD88Lt/Ren-avatar.png", // Default Ren avatar URL
     validate: {
       validator: function (v) {
-        return /^https?:\/\/.+/.test(v); // Accept any valid URL
+        return v === "" || /^https?:\/\/.+/i.test(v); // explicitly allow empty string
       },
-      message: "Avatar URL must be a valid URL",
+      message: "Avatar URL must be a valid URL or empty",
     },
   },
   playingRoles: {
@@ -137,13 +137,6 @@ const userSchema = new Schema({
     type: String,
     maxLength: 500,
   },
-
-  avatarUrl: {
-    // schema for avatar
-    type: String,
-    default: "",
-  },
-
   groups: {
     // populated by User.findById(id).populate('groups')
     type: [

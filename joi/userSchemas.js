@@ -55,8 +55,8 @@ export const profileUpdateSchema = Joi.object({
     .uri() // Validate URL format for avatar
     .optional()
     .allow(null, ""),
-  playingRoles: Joi.array().items(objectId).default([]),
-  playingModes: objectId.required(),
+  playingRoles: objectId.optional().allow(null, ""),
+  playingModes: objectId.optional().allow(null, ""),
   languages: Joi.array().items(objectId).default([]),
   playstyles: Joi.array().items(objectId).default([]),
   likes: Joi.array().items(objectId).default([]),
