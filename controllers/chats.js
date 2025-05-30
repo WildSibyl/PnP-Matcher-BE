@@ -3,23 +3,15 @@ import ErrorResponse from "../utils/ErrorResponse.js";
 
 export const getChatMessages = async (req, res, next) => {
   try {
-    const { userId } = req.user; // authenticated user ID
-    const { recipientId } = req.query; // recipient user ID
-
-    if (!recipientId) {
-      return next(new ErrorResponse("Recipient ID is required", 400));
-    }
+    const userId = req.userId;
 
     const messages = await Message.find({
-      $or: [
-        { sender: userId, recipient: recipientId },
-        { sender: recipientId, recipient: userId },
-      ],
-    }).sort({ createdAt: 1 });
+      $or: [{ sender: userId }, { recipient: userId }],
+    }).sort({ createdAt: 1 }); // optional: sort by oldest → newest
 
-    res.status(200).json(messages);
+    res.json(messages);
   } catch (error) {
-    next(new ErrorResponse("Failed to fetch chat messages", 500));
+    next(new ErrorResponse("Failed to fetch messages", 500));
   }
 };
 
