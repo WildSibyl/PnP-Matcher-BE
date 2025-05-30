@@ -9,6 +9,7 @@ import usersRouter from "./routes/usersRouter.js";
 import usernameRouter from "./routes/usernameRouter.js";
 import errorHandler from "./middlewares/errorHandler.js";
 import uploadRoutes from "./routes/uploadRouter.js";
+import chatsRouter from "./routes/chatsRouter.js";
 import { WebSocketServer } from "ws";
 
 const app = express();
@@ -23,6 +24,7 @@ app.use("/groups", groupsRouter);
 app.use("/options", optionsRouter);
 app.use("/users", usersRouter);
 app.use("/check-username", usernameRouter); // Endpoint to check username availability
+app.use("/chats", chatsRouter);
 
 //upload avatar url
 

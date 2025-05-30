@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
+const { Schema, model } = mongoose;
 
-const optionSchema = new mongoose.Schema({
+const optionSchema = new Schema({
   value: { type: String, required: true },
   label: { type: String, required: true },
   category: {
