@@ -269,7 +269,12 @@ export const getFilteredUsers = async (req, res) => {
     });
 
     //Sort users
-    const sortedUsers = await getUsersSorted(userWithScore, sortBy, 1);
+    let sortedUsers;
+    if (sortBy === "matchScore") {
+      sortedUsers = await getUsersSorted(userWithScore, sortBy, -1);
+    } else {
+      sortedUsers = await getUsersSorted(userWithScore, sortBy, 1);
+    }
 
     //Give back users with matchScore
     res.status(200).json(sortedUsers);
@@ -432,14 +437,19 @@ export const getRollMatches = async (req, res) => {
 
       const matchOver80 = userWithScore.filter((e) => e.matchScore > 80);
       const matchOver70 = userWithScore.filter((e) => e.matchScore > 70);
+      const matchOver10 = userWithScore.filter((e) => e.matchScore > 10);
       let randomFour;
-      if (matchOver80.length > 8) {
+      if (matchOver80.length > 5) {
         //give back 4 random users with match score over 80
         const shuffled = matchOver80.sort(() => 0.5 - Math.random());
         randomFour = shuffled.slice(0, 4);
-      } else if (matchOver70.length > 8) {
+      } else if (matchOver70.length > 5) {
         //give back 4 random users with match score over 70
         const shuffled = matchOver70.sort(() => 0.5 - Math.random());
+        randomFour = shuffled.slice(0, 4);
+      } else if (matchOver10.length > 5) {
+        //give back 4 random users with match score over 10
+        const shuffled = matchOver10.sort(() => 0.5 - Math.random());
         randomFour = shuffled.slice(0, 4);
       } else {
         return res.status(404).json({ message: "Not enough users nearby" });
