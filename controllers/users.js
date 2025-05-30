@@ -269,7 +269,12 @@ export const getFilteredUsers = async (req, res) => {
     });
 
     //Sort users
-    const sortedUsers = await getUsersSorted(userWithScore, sortBy, 1);
+    let sortedUsers;
+    if (sortBy === "matchScore") {
+      sortedUsers = await getUsersSorted(userWithScore, sortBy, -1);
+    } else {
+      sortedUsers = await getUsersSorted(userWithScore, sortBy, 1);
+    }
 
     //Give back users with matchScore
     res.status(200).json(sortedUsers);

@@ -64,17 +64,17 @@ const calculateMatchScore = (userA, userB, distance) => {
   const finalScore = Math.round((100 / pointGoal) * score);
 
   //LOG ALL VALUES
-  console.log({
-    systems: systemsScore,
-    likes: likesScore,
-    dislikes: dislikesScore,
-    weekdays: weekdaysScore,
-    playstyles: playstylesScore,
-    distance: distanceScore,
-    clashScore: clashScore,
-    totalScore: score,
-    finalScore: finalScore,
-  });
+  // console.log({
+  //   systems: systemsScore,
+  //   likes: likesScore,
+  //   dislikes: dislikesScore,
+  //   weekdays: weekdaysScore,
+  //   playstyles: playstylesScore,
+  //   distance: distanceScore,
+  //   clashScore: clashScore,
+  //   totalScore: score,
+  //   finalScore: finalScore,
+  // });
 
   return Math.max(1, Math.min(finalScore, 99));
 };
