@@ -25,19 +25,20 @@ export const getChatMessages = async (req, res, next) => {
 
 export const sendChat = async (req, res, next) => {
   try {
-    const { userId } = req.user; // sender (authenticated)
-    const { recipient, text, file } = req.body;
+    const userId = req.userId; // sender (authenticated)
+    const { recipient, text, file, chatId } = req.body;
 
-    if (!recipient || (!text && !file)) {
+    if (!recipient || (!text && !file) || !chatId) {
       return next(
         new ErrorResponse(
-          "Recipient and message text or file are required",
+          "Recipient, chatId and message text or file are required",
           400
         )
       );
     }
 
     const newMessage = new Message({
+      chatId,
       sender: userId,
       recipient,
       text,
@@ -48,6 +49,7 @@ export const sendChat = async (req, res, next) => {
 
     res.status(201).json(savedMessage);
   } catch (error) {
+    console.error("sendChat error:", error);
     next(new ErrorResponse("Failed to send message", 500));
   }
 };
