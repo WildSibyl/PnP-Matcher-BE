@@ -43,10 +43,15 @@ const wss = new WebSocketServer({ server });
 
 wss.on("connection", (connection) => {
   console.log("New WebSocket connection established");
-  connection.send("Welcome to the WebSocket server!");
 
   connection.on("message", (message) => {
     console.log(`Received message: ${message}`);
+    // Broadcast to all clients
+    // wss.clients.forEach((client) => {
+    //   if (client.readyState === 1) {
+    //     client.send(message);
+    //   }
+    // });
   });
 
   connection.on("close", () => {

@@ -7,7 +7,7 @@ export const getChatMessages = async (req, res, next) => {
 
     const messages = await Message.find({
       $or: [{ sender: userId }, { recipient: userId }],
-    }).sort({ createdAt: 1 }); // optional: sort by oldest → newest
+    }).sort({ createdAt: 1 }); // Sort by creation date in ascending order
 
     res.json(messages);
   } catch (error) {
