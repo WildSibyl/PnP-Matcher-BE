@@ -9,6 +9,8 @@ import usersRouter from "./routes/usersRouter.js";
 import usernameRouter from "./routes/usernameRouter.js";
 import errorHandler from "./middlewares/errorHandler.js";
 import uploadRoutes from "./routes/uploadRouter.js";
+import chatsRouter from "./routes/chatsRouter.js";
+import { WebSocketServer } from "ws";
 
 const app = express();
 const port = process.env.PORT || 8000;
@@ -22,6 +24,7 @@ app.use("/groups", groupsRouter);
 app.use("/options", optionsRouter);
 app.use("/users", usersRouter);
 app.use("/check-username", usernameRouter); // Endpoint to check username availability
+app.use("/chats", chatsRouter);
 
 //upload avatar url
 
@@ -32,9 +35,32 @@ app.use("/*splat", (req, res) => res.status(404).json({ error: "Not found" })); 
 
 app.use(errorHandler);
 
-app.listen(port, () => console.log(`Server listening on port : ${port}`));
+const server = app.listen(port, () =>
+  console.log(`Server listening on port : ${port}`)
+);
+
+const wss = new WebSocketServer({ server });
+
+wss.on("connection", (connection) => {
+  console.log("New WebSocket connection established");
+
+  connection.on("message", (message) => {
+    console.log(`Received message: ${message}`);
+    // Broadcast to all clients
+    // wss.clients.forEach((client) => {
+    //   if (client.readyState === 1) {
+    //     client.send(message);
+    //   }
+    // });
+  });
+
+  connection.on("close", () => {
+    console.log("WebSocket connection closed");
+  });
+});
 
 //npm install
 //npm i bcrypt
 //npm install jsonwebtoken
 //npm i cookie-parser
+//npm i ws
