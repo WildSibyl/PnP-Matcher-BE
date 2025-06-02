@@ -170,7 +170,7 @@ export const updateEmail = async (req, res) => {
     return res.status(400).json({ error: "Emails do not match" });
   }
 
-  const user = await User.findById(userId);
+  const user = await User.findById(userId).select("+password"); // Getting the password field only for this operation
   const isMatch = await bcrypt.compare(currentPassword, user.password);
   if (!isMatch) {
     return res.status(401).json({ error: "Invalid current password" });
