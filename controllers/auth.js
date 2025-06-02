@@ -161,3 +161,53 @@ export const signOut = (req, res) => {
     message: "User logged out successfully",
   });
 };
+
+export const updateEmail = async (req, res) => {
+  const userId = req.userId;
+  const { newEmail, confirmNewEmail, currentPassword } = req.body;
+
+  if (newEmail !== confirmNewEmail) {
+    return res.status(400).json({ error: "Emails do not match" });
+  }
+
+  const user = await User.findById(userId).select("+password"); // Getting the password field only for this operation
+  const isMatch = await bcrypt.compare(currentPassword, user.password);
+  if (!isMatch) {
+    return res.status(401).json({ error: "Invalid current password" });
+  }
+
+  user.email = newEmail;
+  await user.save();
+
+  return res.status(200).json({ message: "Email updated" });
+};
+
+export const updatePassword = async (req, res) => {
+  const userId = req.userId;
+  const { currentPassword, newPassword, confirmNewPassword } = req.body;
+
+  if (newPassword !== confirmNewPassword) {
+    return res.status(400).json({ error: "Passwords do not match" });
+  }
+
+  const user = await User.findById(userId).select("+password"); // Getting the password field only for this operation
+  if (!user) {
+    return res.status(404).json({ error: "User not found" });
+  }
+  console.log("User found:", user);
+  if (!currentPassword || !user.password) {
+    return res
+      .status(400)
+      .json({ error: "Missing current password or stored password" });
+  }
+
+  const isMatch = await bcrypt.compare(currentPassword, user.password);
+  if (!isMatch) {
+    return res.status(401).json({ error: "Invalid current password" });
+  }
+
+  user.password = await bcrypt.hash(newPassword, 10);
+  await user.save();
+
+  return res.status(200).json({ message: "Password updated" });
+};
