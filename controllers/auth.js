@@ -163,7 +163,7 @@ export const signOut = (req, res) => {
 };
 
 export const updateEmail = async (req, res) => {
-  const userId = req.user.id; // from auth middleware
+  const userId = req.userId;
   const { newEmail, confirmNewEmail, currentPassword } = req.body;
 
   if (newEmail !== confirmNewEmail) {
@@ -183,20 +183,30 @@ export const updateEmail = async (req, res) => {
 };
 
 export const updatePassword = async (req, res) => {
-  const userId = req.user.id;
+  const userId = req.userId;
   const { currentPassword, newPassword, confirmNewPassword } = req.body;
 
   if (newPassword !== confirmNewPassword) {
     return res.status(400).json({ error: "Passwords do not match" });
   }
 
-  const user = await User.findById(userId);
+  const user = await User.findById(userId).select("+password"); // Getting the password field only for this operation
+  if (!user) {
+    return res.status(404).json({ error: "User not found" });
+  }
+  console.log("User found:", user);
+  if (!currentPassword || !user.password) {
+    return res
+      .status(400)
+      .json({ error: "Missing current password or stored password" });
+  }
+
   const isMatch = await bcrypt.compare(currentPassword, user.password);
   if (!isMatch) {
     return res.status(401).json({ error: "Invalid current password" });
   }
 
-  user.password = await bcrypt.hash(newPassword, 12); // or your hash strength
+  user.password = await bcrypt.hash(newPassword, 10);
   await user.save();
 
   return res.status(200).json({ message: "Password updated" });
