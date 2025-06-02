@@ -136,6 +136,7 @@ export const signIn = async (req, res) => {
   const signedInUser = {
     userName: user.userName,
     email: user.email,
+    _id: user._id,
   };
 
   res.cookie("token", token, cookieOptions);
