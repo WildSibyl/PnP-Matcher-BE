@@ -11,7 +11,15 @@ export const getAllGroups = async (req, res) => {
 export const createGroup = async (req, res) => {
   const { body } = req;
   console.log(req.userId);
-  const newGroup = await Group.create({ ...body, author: req.userId });
+
+  const user = await User.findById(req.userId);
+  if (!user) throw new ErrorResponse("User doesn't exist", 404);
+
+  const newGroup = await Group.create({
+    ...body,
+    author: req.userId,
+    address: user.address,
+  });
 
   // Add group to user's list of groups
   await User.findByIdAndUpdate(req.userId, {
