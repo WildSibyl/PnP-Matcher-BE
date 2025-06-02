@@ -211,3 +211,44 @@ export const updatePassword = async (req, res) => {
 
   return res.status(200).json({ message: "Password updated" });
 };
+
+export const deleteAccount = async (req, res, next) => {
+  try {
+    const userId = req.userId; // from verifyToken middleware
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ error: "Email and password are required" });
+    }
+
+    const user = await User.findById(userId).select("+password"); // Getting the password field only for this operation
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    if (user.email !== email) {
+      return res
+        .status(401)
+        .json({ error: "Email does not match authenticated user" });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ error: "Incorrect password" });
+    }
+
+    await User.findByIdAndDelete(userId);
+
+    // Clear the cookie that holds the JWT
+    res.clearCookie("token", {
+      httpOnly: true,
+      sameSite: "Strict",
+      secure: process.env.NODE_ENV === "production",
+    });
+
+    res.status(200).json({ message: "Account deleted successfully" });
+  } catch (err) {
+    next(err);
+  }
+};
