@@ -161,3 +161,43 @@ export const signOut = (req, res) => {
     message: "User logged out successfully",
   });
 };
+
+export const updateEmail = async (req, res) => {
+  const userId = req.user.id; // from auth middleware
+  const { newEmail, confirmNewEmail, currentPassword } = req.body;
+
+  if (newEmail !== confirmNewEmail) {
+    return res.status(400).json({ error: "Emails do not match" });
+  }
+
+  const user = await User.findById(userId);
+  const isMatch = await bcrypt.compare(currentPassword, user.password);
+  if (!isMatch) {
+    return res.status(401).json({ error: "Invalid current password" });
+  }
+
+  user.email = newEmail;
+  await user.save();
+
+  return res.status(200).json({ message: "Email updated" });
+};
+
+export const updatePassword = async (req, res) => {
+  const userId = req.user.id;
+  const { currentPassword, newPassword, confirmNewPassword } = req.body;
+
+  if (newPassword !== confirmNewPassword) {
+    return res.status(400).json({ error: "Passwords do not match" });
+  }
+
+  const user = await User.findById(userId);
+  const isMatch = await bcrypt.compare(currentPassword, user.password);
+  if (!isMatch) {
+    return res.status(401).json({ error: "Invalid current password" });
+  }
+
+  user.password = await bcrypt.hash(newPassword, 12); // or your hash strength
+  await user.save();
+
+  return res.status(200).json({ message: "Password updated" });
+};

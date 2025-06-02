@@ -77,15 +77,18 @@ export const signInSchema = Joi.object({
   password: Joi.string().alphanum().min(8).required(),
 });
 
-export const changeEmailSchema = Joi.object({
+export const updateEmailSchema = Joi.object({
   newEmail: Joi.string().email().required(),
-  password: Joi.string().required(),
+  confirmNewEmail: Joi.string().valid(Joi.ref("newEmail")).required().messages({
+    "any.only": "New email and confirmation do not match",
+  }),
+  currentPassword: Joi.string().required(),
 });
 
-export const changePasswordSchema = Joi.object({
+export const updatePasswordSchema = Joi.object({
   currentPassword: Joi.string().required(),
   newPassword: Joi.string().min(8).required(),
-  confirmPassword: Joi.string()
+  confirmNewPassword: Joi.string()
     .valid(Joi.ref("newPassword"))
     .required()
     .messages({
