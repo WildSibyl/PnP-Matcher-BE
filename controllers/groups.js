@@ -29,7 +29,6 @@ export const getSingleGroup = async (req, res) => {
     params: { id },
   } = req;
 
-  // Mongoose offers a method to check if the id is valid
   if (!isValidObjectId(id)) throw new ErrorResponse("Invalid id", 400);
 
   const group = await Group.findById(id).populate("author");

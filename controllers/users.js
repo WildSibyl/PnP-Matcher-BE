@@ -110,7 +110,7 @@ export const getFilteredUsers = async (req, res) => {
     experience = [],
     likes = [],
     dislikes = [],
-    radius = 5000,
+    radius = 0,
     weekdays = [],
     playingModes = "",
     frequencyPerMonth = 0,
@@ -120,7 +120,7 @@ export const getFilteredUsers = async (req, res) => {
   } = req.body;
 
   const userId = req.userId;
-  const radiusNum = parseInt(radius);
+  const radiusNum = parseInt(req.query.radius) || parseInt(radius);
   console.log("USER ID ", userId);
 
   //console.log("User ID:", userId);
@@ -130,7 +130,7 @@ export const getFilteredUsers = async (req, res) => {
     let currentUser = null;
 
     //Location is only used for logged in users
-    if (userId) {
+    if (userId && radiusNum !== 0) {
       currentUser = await User.findById(userId);
       if (!currentUser || !currentUser.address?.location?.coordinates) {
         return res.status(400).json({ error: "User location not available" });
@@ -460,5 +460,15 @@ export const getRollMatches = async (req, res) => {
       console.error("Error fetching users:", error);
       res.status(500).json({ message: "Server error" });
     }
+  }
+};
+
+export const getAuthoredGroups = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const groups = await Group.find({ author: userId });
+    res.json(groups);
+  } catch (err) {
+    res.status(500).json({ error: "Error loading groups" });
   }
 };

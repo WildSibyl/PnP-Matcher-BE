@@ -27,4 +27,6 @@ usersRouter
   .put(validateSchema(profileUpdateSchema), verifyToken, updateUser)
   .delete(verifyToken, deleteUser);
 
+usersRouter.route("/:id/groups/authored").get(verifyToken);
+
 export default usersRouter;
