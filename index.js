@@ -46,12 +46,13 @@ wss.on("connection", (connection) => {
 
   connection.on("message", (message) => {
     console.log(`Received message: ${message}`);
-    // Broadcast to all clients
-    // wss.clients.forEach((client) => {
-    //   if (client.readyState === 1) {
-    //     client.send(message);
-    //   }
-    // });
+
+    // Broadcast the message to all connected clients
+    wss.clients.forEach((client) => {
+      if (client.readyState === 1) {
+        client.send(message);
+      }
+    });
   });
 
   connection.on("close", () => {
