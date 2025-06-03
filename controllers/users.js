@@ -3,6 +3,7 @@ import User from "../models/User.js";
 import ErrorResponse from "../utils/ErrorResponse.js";
 import { Types } from "mongoose";
 import calculateMatchScore from "../utils/getScore.js";
+import Group from "../models/Group.js";
 
 //distance magic
 function getDistanceInMeters(lat1, lon1, lat2, lon2) {
@@ -460,6 +461,213 @@ export const getRollMatches = async (req, res) => {
       console.error("Error fetching users:", error);
       res.status(500).json({ message: "Server error" });
     }
+  }
+};
+
+export const inviteToGroup = async (req, res) => {
+  const id = req.userId;
+  const { invitedUserId, groupId } = req.body;
+
+  // Mongoose offers a method to check if the id is valid
+  if (
+    !isValidObjectId(id) ||
+    !isValidObjectId(invitedUserId) ||
+    !isValidObjectId(groupId)
+  )
+    throw new ErrorResponse("Invalid ids", 400);
+
+  try {
+    const group = await Group.findById(groupId);
+    const me = await User.findById(id);
+
+    if (!me)
+      throw new ErrorResponse(`User with id of ${id} doesn't exist`, 404);
+
+    if (!group) {
+      throw new ErrorResponse("Group not found", 404);
+    }
+
+    //is user author of the group?
+    const isAuthor = group.author.toString() === id;
+    if (!isAuthor) {
+      throw new ErrorResponse("Only group admins can invite users", 400);
+    }
+
+    const invitedUser = await User.findById(invitedUserId);
+    if (!invitedUser) {
+      throw new ErrorResponse("User not found", 400);
+    }
+
+    //Check if already invited
+    if (!Array.isArray(invitedUser.invites)) {
+      invitedUser.invites = [];
+    }
+
+    if (invitedUser.invites.includes(groupId)) {
+      throw new ErrorResponse("User already invited to this group", 400);
+    }
+
+    //Check if already part of the group
+    if (invitedUser.groups.includes(groupId)) {
+      throw new ErrorResponse("User already part of that group", 400);
+    }
+
+    //add invite to user model
+    invitedUser.invites.push(groupId);
+    await invitedUser.save();
+
+    res.status(200).json({
+      message: "User successfully invited to group",
+      invites: invitedUser.invites,
+    });
+  } catch (error) {
+    console.error("Error inviting user:", error);
+    const status = error.statusCode || 500;
+    res.status(status).json({ message: error.message || "Server error" });
+  }
+};
+
+export const addToGroup = async (req, res) => {
+  const id = req.userId;
+  const { groupId } = req.body;
+
+  // Mongoose offers a method to check if the id is valid
+  if (!isValidObjectId(id) || !isValidObjectId(groupId))
+    throw new ErrorResponse("Invalid ids", 400);
+
+  try {
+    const group = await Group.findById(groupId);
+    const me = await User.findById(id);
+
+    if (!me)
+      throw new ErrorResponse(`User with id of ${id} doesn't exist`, 404);
+
+    if (!group) {
+      throw new ErrorResponse("Group not found", 404);
+    }
+
+    //Check if already part of the group
+    if (me.groups.includes(groupId)) {
+      throw new ErrorResponse("User already part of that group", 400);
+    }
+
+    //Check if invited
+    if (!Array.isArray(me.invites)) {
+      me.invites = [];
+    }
+    if (!me.invites.includes(groupId)) {
+      throw new ErrorResponse("User not invited to this group", 400);
+    }
+
+    //add user to group
+    me.groups.push(groupId);
+    group.members.push(id);
+    await me.save();
+    await group.save();
+
+    //remove invite
+    me.invites = me.invites.filter(
+      (id) => id.toString() !== groupId.toString()
+    );
+
+    res.status(200).json({
+      message: "User joined group successfully",
+      group: group,
+    });
+  } catch (error) {
+    console.error("Error joining the group", error);
+    const status = error.statusCode || 500;
+    res.status(status).json({ message: error.message || "Server error" });
+  }
+};
+
+export const removeInvite = async (req, res) => {
+  const id = req.userId;
+  const { groupId } = req.body;
+
+  if (!isValidObjectId(id) || !isValidObjectId(groupId))
+    throw new ErrorResponse("Invalid ids", 400);
+
+  try {
+    const group = await Group.findById(groupId);
+    const me = await User.findById(id);
+
+    if (!me)
+      throw new ErrorResponse(`User with id of ${id} doesn't exist`, 404);
+
+    if (!group) {
+      throw new ErrorResponse("Group not found", 404);
+    }
+
+    //Check if already part of the group
+    if (me.groups.includes(groupId)) {
+      throw new ErrorResponse("User already part of that group", 400);
+    }
+
+    //Check if invited
+    if (!Array.isArray(me.invites)) {
+      me.invites = [];
+    }
+    if (!me.invites.includes(groupId)) {
+      throw new ErrorResponse("User not invited to this group", 400);
+    }
+
+    //remove invite
+    me.invites = me.invites.filter(
+      (id) => id.toString() !== groupId.toString()
+    );
+
+    await me.save();
+
+    res.status(200).json({
+      message: "Invite declined successfully",
+      user: me,
+    });
+  } catch (error) {
+    console.error("Error declining the invite", error);
+    const status = error.statusCode || 500;
+    res.status(status).json({ message: error.message || "Server error" });
+  }
+};
+
+export const removeFromGroup = async (req, res) => {
+  const id = req.userId;
+  const { groupId } = req.body;
+
+  if (!isValidObjectId(id) || !isValidObjectId(groupId))
+    throw new ErrorResponse("Invalid ids", 400);
+
+  try {
+    const group = await Group.findById(groupId);
+    const me = await User.findById(id);
+
+    if (!me)
+      throw new ErrorResponse(`User with id of ${id} doesn't exist`, 404);
+
+    if (!group) {
+      throw new ErrorResponse("Group not found", 404);
+    }
+
+    if (!me.groups.includes(groupId)) {
+      throw new ErrorResponse("Not a member of the group", 400);
+    }
+
+    //remove user from group
+    me.groups = me.groups.filter((id) => id.toString() !== groupId.toString());
+    group.members = group.members.filter(
+      (member) => member.toString() !== id.toString()
+    );
+    await me.save();
+    await group.save();
+
+    res.status(200).json({
+      message: "User has left the group",
+      group: group,
+    });
+  } catch (error) {
+    console.error("Error removing the user from the group", error);
+    const status = error.statusCode || 500;
+    res.status(status).json({ message: error.message || "Server error" });
   }
 };
 

@@ -147,6 +147,15 @@ const userSchema = new Schema({
     ],
     default: [],
   },
+  invites: {
+    type: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Group",
+      },
+    ],
+    default: [],
+  },
   permission: {
     type: String,
     enum: ["user", "admin"],
