@@ -13,6 +13,7 @@ export const groupSchema = Joi.object({
       "string.pattern.base":
         "Image must be a valid URL ending in .jpeg, .jpg, .png, .gif, or .webp",
     }),
+  // TBD Adress = GMs adress in MVP?
   address: Joi.object({
     street: Joi.string(),
     houseNumber: Joi.string(),

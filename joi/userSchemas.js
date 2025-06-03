@@ -63,4 +63,6 @@ export const profileUpdateSchema = Joi.object({
   dislikes: Joi.array().items(objectId).default([]),
   tagline: Joi.string().max(150).optional().allow(""),
   description: Joi.string().max(500).optional().allow(""),
+  groups: Joi.array().items(objectId).default([]),
+  invites: Joi.array().items(objectId).default([]),
 });

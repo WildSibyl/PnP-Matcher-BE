@@ -6,6 +6,10 @@ import {
   updateUser,
   deleteUser,
   getRollMatches,
+  inviteToGroup,
+  addToGroup,
+  removeInvite,
+  removeFromGroup,
 } from "../controllers/users.js";
 import validateSchema from "../middlewares/validateSchema.js";
 import { profileUpdateSchema } from "../joi/userSchemas.js";
@@ -20,6 +24,14 @@ usersRouter
   .post(verifyTokenOptional, getFilteredUsers);
 
 usersRouter.route("/matches").get(verifyToken, getRollMatches);
+
+usersRouter.route("/invite").post(verifyToken, inviteToGroup);
+
+usersRouter.route("/acceptinvite").post(verifyToken, addToGroup);
+
+usersRouter.route("/removeinvite").post(verifyToken, removeInvite);
+
+usersRouter.route("/leavegroup").post(verifyToken, removeFromGroup);
 
 usersRouter
   .route("/:id")
