@@ -111,7 +111,7 @@ export const getFilteredUsers = async (req, res) => {
     experience = [],
     likes = [],
     dislikes = [],
-    radius = 5000,
+    radius = 0,
     weekdays = [],
     playingModes = "",
     frequencyPerMonth = 0,
@@ -121,7 +121,7 @@ export const getFilteredUsers = async (req, res) => {
   } = req.body;
 
   const userId = req.userId;
-  const radiusNum = parseInt(radius);
+  const radiusNum = parseInt(req.query.radius) || parseInt(radius);
   console.log("USER ID ", userId);
 
   //console.log("User ID:", userId);
@@ -131,7 +131,7 @@ export const getFilteredUsers = async (req, res) => {
     let currentUser = null;
 
     //Location is only used for logged in users
-    if (userId) {
+    if (userId && radiusNum !== 0) {
       currentUser = await User.findById(userId);
       if (!currentUser || !currentUser.address?.location?.coordinates) {
         return res.status(400).json({ error: "User location not available" });
@@ -562,13 +562,13 @@ export const addToGroup = async (req, res) => {
     //add user to group
     me.groups.push(groupId);
     group.members.push(id);
-    await me.save();
-    await group.save();
-
     //remove invite
     me.invites = me.invites.filter(
       (id) => id.toString() !== groupId.toString()
     );
+
+    await me.save();
+    await group.save();
 
     res.status(200).json({
       message: "User joined group successfully",
@@ -597,11 +597,6 @@ export const removeInvite = async (req, res) => {
 
     if (!group) {
       throw new ErrorResponse("Group not found", 404);
-    }
-
-    //Check if already part of the group
-    if (me.groups.includes(groupId)) {
-      throw new ErrorResponse("User already part of that group", 400);
     }
 
     //Check if invited
@@ -668,5 +663,33 @@ export const removeFromGroup = async (req, res) => {
     console.error("Error removing the user from the group", error);
     const status = error.statusCode || 500;
     res.status(status).json({ message: error.message || "Server error" });
+  }
+};
+
+export const getAuthoredGroups = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const groups = await Group.find({ author: userId });
+    res.json(groups);
+  } catch (err) {
+    res.status(500).json({ error: "Error loading groups" });
+  }
+};
+
+export const getYourGroups = async (req, res) => {
+  try {
+    const userId = req.userId;
+
+    if (!isValidObjectId(userId)) {
+      throw new ErrorResponse("Not a valid object id", 404);
+    }
+
+    const user = await User.findById(userId).populate("groups");
+    if (!user) {
+      throw new ErrorResponse("User not found", 404);
+    }
+    res.json(user.groups);
+  } catch (error) {
+    throw new ErrorResponse(`Error loading groups: ${error}`, 500);
   }
 };
