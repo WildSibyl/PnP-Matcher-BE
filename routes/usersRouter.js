@@ -10,6 +10,8 @@ import {
   addToGroup,
   removeInvite,
   removeFromGroup,
+  getAuthoredGroups,
+  getYourGroups,
 } from "../controllers/users.js";
 import validateSchema from "../middlewares/validateSchema.js";
 import { profileUpdateSchema } from "../joi/userSchemas.js";
@@ -33,12 +35,14 @@ usersRouter.route("/removeinvite").post(verifyToken, removeInvite);
 
 usersRouter.route("/leavegroup").post(verifyToken, removeFromGroup);
 
+usersRouter.route("/groups/authored").get(verifyToken, getAuthoredGroups);
+
+usersRouter.route("/groups").get(verifyToken, getYourGroups);
+
 usersRouter
   .route("/:id")
   .get(getSingleUser)
   .put(validateSchema(profileUpdateSchema), verifyToken, updateUser)
   .delete(verifyToken, deleteUser);
-
-usersRouter.route("/:id/groups/authored").get(verifyToken);
 
 export default usersRouter;

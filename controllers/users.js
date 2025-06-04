@@ -562,13 +562,13 @@ export const addToGroup = async (req, res) => {
     //add user to group
     me.groups.push(groupId);
     group.members.push(id);
-    await me.save();
-    await group.save();
-
     //remove invite
     me.invites = me.invites.filter(
       (id) => id.toString() !== groupId.toString()
     );
+
+    await me.save();
+    await group.save();
 
     res.status(200).json({
       message: "User joined group successfully",
@@ -597,11 +597,6 @@ export const removeInvite = async (req, res) => {
 
     if (!group) {
       throw new ErrorResponse("Group not found", 404);
-    }
-
-    //Check if already part of the group
-    if (me.groups.includes(groupId)) {
-      throw new ErrorResponse("User already part of that group", 400);
     }
 
     //Check if invited
@@ -673,10 +668,28 @@ export const removeFromGroup = async (req, res) => {
 
 export const getAuthoredGroups = async (req, res) => {
   try {
-    const userId = req.user._id;
+    const userId = req.userId;
     const groups = await Group.find({ author: userId });
     res.json(groups);
   } catch (err) {
     res.status(500).json({ error: "Error loading groups" });
+  }
+};
+
+export const getYourGroups = async (req, res) => {
+  try {
+    const userId = req.userId;
+
+    if (!isValidObjectId(userId)) {
+      throw new ErrorResponse("Not a valid object id", 404);
+    }
+
+    const user = await User.findById(userId).populate("groups");
+    if (!user) {
+      throw new ErrorResponse("User not found", 404);
+    }
+    res.json(user.groups);
+  } catch (error) {
+    throw new ErrorResponse(`Error loading groups: ${error}`, 500);
   }
 };
