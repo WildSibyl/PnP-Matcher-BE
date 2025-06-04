@@ -117,7 +117,7 @@ export const getFilteredUsers = async (req, res) => {
     frequencyPerMonth = 0,
     languages = [],
     age = "",
-    sortBy = "userName",
+    sortBy = "name",
   } = req.body;
 
   const userId = req.userId;
@@ -684,11 +684,21 @@ export const getYourGroups = async (req, res) => {
       throw new ErrorResponse("Not a valid object id", 404);
     }
 
-    const user = await User.findById(userId).populate("groups");
+    const user = await User.findById(userId);
     if (!user) {
       throw new ErrorResponse("User not found", 404);
     }
-    res.json(user.groups);
+    const groups = await Group.find({ _id: { $in: user.groups } })
+      .populate("author")
+      .populate("experience")
+      .populate("playingModes")
+      .populate("playstyles")
+      .populate("likes")
+      .populate("dislikes")
+      .populate("members")
+      .populate("systems");
+
+    res.json(groups);
   } catch (error) {
     throw new ErrorResponse(`Error loading groups: ${error}`, 500);
   }
