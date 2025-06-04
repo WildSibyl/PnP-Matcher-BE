@@ -15,7 +15,23 @@ import { WebSocketServer } from "ws";
 const app = express();
 const port = process.env.PORT || 8000;
 
-app.use(cors({ origin: process.env.CLIENT_URL, credentials: true })); // Allow cross-origin requests from the client URL
+const allowedOrigins = [
+  process.env.CLIENT_URL_PROD,
+  process.env.CLIENT_URL_DEV,
+];
+
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+  })
+); // Allow cross-origin requests from the client URL
 app.use(express.json());
 app.use(cookieParser());
 
