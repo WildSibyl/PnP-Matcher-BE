@@ -117,7 +117,7 @@ export const getFilteredUsers = async (req, res) => {
     frequencyPerMonth = 0,
     languages = [],
     age = "",
-    sortBy = "userName",
+    sortBy = "name",
   } = req.body;
 
   const userId = req.userId;
@@ -692,6 +692,7 @@ export const getYourGroups = async (req, res) => {
       .populate("author")
       .populate("experience")
       .populate("playingModes")
+      .populate("playstyles")
       .populate("likes")
       .populate("dislikes")
       .populate("members")

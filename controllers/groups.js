@@ -2,6 +2,47 @@ import { isValidObjectId } from "mongoose";
 import Group from "../models/Group.js";
 import ErrorResponse from "../utils/ErrorResponse.js";
 import User from "../models/User.js";
+import { Types } from "mongoose";
+import calculateMatchScore from "../utils/getScore.js";
+
+//distance magic
+function getDistanceInMeters(lat1, lon1, lat2, lon2) {
+  const R = 6371000; // Erdradius in Metern
+  const toRad = (deg) => (deg * Math.PI) / 180;
+
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(lat1)) *
+      Math.cos(toRad(lat2)) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  const distance = R * c; // Entfernung in Metern
+  return distance;
+}
+
+//sorting magic
+async function getGroupsSorted(users, sortBy, sortOrder) {
+  try {
+    let grpSortBy = null;
+    if (sortBy === "userName") {
+      grpSortBy = "name";
+    } else {
+      grpSortBy = sortBy;
+    }
+    const sortTheseUsers = [...users];
+    const sortedUsers = sortTheseUsers.sort((a, b) => {
+      if (!a[grpSortBy] || !b[grpSortBy]) return 0;
+      return a[grpSortBy] > b[grpSortBy] ? sortOrder : -sortOrder;
+    });
+    return sortedUsers;
+  } catch (error) {}
+}
 
 export const getAllGroups = async (req, res) => {
   const groups = await Group.find().populate("author");
@@ -43,6 +84,7 @@ export const getSingleGroup = async (req, res) => {
     .populate("author")
     .populate("experience")
     .populate("playingModes")
+    .populate("playstyles")
     .populate("likes")
     .populate("dislikes")
     .populate("members")
@@ -102,5 +144,148 @@ export const deleteGroup = async (req, res) => {
     res.json({ success: `Group with id of ${id} was deleted` });
   } else {
     throw new ErrorResponse("You are not authorized to delete this group", 403);
+  }
+};
+
+export const getFilteredGroups = async (req, res) => {
+  const {
+    search = "",
+    systems = [],
+    playstyles = [],
+    experience = [],
+    likes = [],
+    dislikes = [],
+    radius = 0,
+    weekdays = [],
+    playingModes = "",
+    frequencyPerMonth = 0,
+    languages = [],
+    age = "",
+    sortBy = "userName",
+  } = req.body;
+
+  const userId = req.userId;
+  const radiusNum = parseInt(req.query.radius) || parseInt(radius);
+  console.log("USER ID ", userId);
+  let currentUser;
+
+  try {
+    const query = {};
+    if (userId) {
+      currentUser = await User.findById(userId);
+
+      if (!currentUser) {
+        throw new ErrorResponse("User not found", 404);
+      }
+    }
+
+    //User groups or empty array (if no user is logged in)
+    const userGroupIds = currentUser.groups || [];
+
+    //filter groups out if they have the user as member or if they are in the groups list
+    query._id = { $nin: userGroupIds };
+    query.members = { $ne: userId };
+
+    if (radiusNum !== 0 && currentUser?.address?.location?.coordinates) {
+      const [lng, lat] = currentUser.address.location.coordinates;
+      query["address.location"] = {
+        $near: {
+          $geometry: {
+            type: "Point",
+            coordinates: [lng, lat], // reversed coordinates for MongoDB
+          },
+          $maxDistance: radiusNum,
+        },
+      };
+    }
+
+    // Convert string IDs to ObjectId for filters referencing populated fields
+    const toObjectIdArray = (arr) =>
+      arr.filter(Boolean).map((id) => new Types.ObjectId(id));
+
+    if (search.trim() !== "") {
+      query.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { tagline: { $regex: search, $options: "i" } },
+        { description: { $regex: search, $options: "i" } },
+      ];
+    }
+    if (systems.length) query.systems = { $in: toObjectIdArray(systems) };
+    if (playstyles.length)
+      query.playstyles = { $in: toObjectIdArray(playstyles) };
+    if (experience.length)
+      query.experience = { $in: toObjectIdArray(experience) };
+    if (likes.length) query.likes = { $in: toObjectIdArray(likes) };
+    if (dislikes.length) query.dislikes = { $in: toObjectIdArray(dislikes) };
+    if (weekdays.length) query.weekdays = { $in: weekdays };
+    if (playingModes) query.playingModes = new Types.ObjectId(playingModes);
+    if (frequencyPerMonth > 0)
+      query.frequencyPerMonth = { $gte: frequencyPerMonth };
+    if (languages.length) query.languages = { $in: toObjectIdArray(languages) };
+
+    const groups = await Group.find(query)
+      .populate("experience")
+      .populate("systems")
+      .populate("languages")
+      .populate("playingModes")
+      .populate("playstyles")
+      .populate("likes")
+      .populate("dislikes");
+
+    if (!groups.length) {
+      return res.status(404).json({ message: "No groups found" });
+    }
+
+    console.log(groups);
+
+    //CalculateMatchScore
+    const groupsWithScore = groups.map((group) => {
+      if (currentUser) {
+        const userCoords = currentUser.address?.location?.coordinates;
+        const groupCoords = group.address?.location?.coordinates;
+
+        let distance = null;
+        let matchScore = null;
+
+        if (
+          Array.isArray(userCoords) &&
+          userCoords.length === 2 &&
+          Array.isArray(groupCoords) &&
+          groupCoords.length === 2
+        ) {
+          const [long1, lat1] = userCoords;
+          const [long2, lat2] = groupCoords;
+
+          distance = getDistanceInMeters(lat1, long1, lat2, long2);
+
+          matchScore = calculateMatchScore(currentUser, group, distance);
+        }
+
+        return {
+          ...group.toObject(),
+          matchScore: matchScore ?? "Not available",
+          distance: distance ?? "Not available",
+        };
+      } else {
+        return {
+          ...group.toObject(),
+          matchScore: "Not available",
+          distance: "Not available",
+        };
+      }
+    });
+
+    //Sort groups
+    let sortedGroups;
+    if (sortBy === "matchScore") {
+      sortedGroups = await getGroupsSorted(groupsWithScore, sortBy, -1);
+    } else {
+      sortedGroups = await getGroupsSorted(groupsWithScore, sortBy, 1);
+    }
+
+    res.status(200).json(sortedGroups);
+  } catch (error) {
+    console.error("Error fetching groups:", error);
+    throw new ErrorResponse(`Error fetching groups ${error}`, 500);
   }
 };
