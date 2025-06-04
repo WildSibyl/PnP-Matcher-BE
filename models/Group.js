@@ -8,7 +8,18 @@ const groupSchema = new Schema({
     ref: "User",
     required: [true, "Author is required"],
   },
-  name: { type: String, required: [true, "Group name is required"] },
+  name: {
+    type: String,
+    unique: true, // This creates a unique index on the username field
+    trim: true,
+    required: [true, "Group name is required"],
+    validate: {
+      validator: function (v) {
+        return /^[A-Za-z0-9\s]+$/.test(v);
+      },
+      message: "Group name can only contain letters, numbers, and spaces",
+    },
+  },
   image: {
     type: String,
     required: [true, "Cover image is required"], //url or imported? or both?

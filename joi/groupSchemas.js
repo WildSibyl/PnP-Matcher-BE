@@ -5,7 +5,10 @@ const objectId = Joi.string().pattern(/^[0-9a-fA-F]{24}$/); //additional validat
 
 export const groupSchema = Joi.object({
   author: objectId.required(),
-  name: Joi.string().required(),
+  name: Joi.string()
+    .trim()
+    .pattern(/^[A-Za-z0-9\s]+$/, "letters, numbers, and spaces")
+    .required(),
   image: Joi.string()
     .uri({ scheme: ["http", "https"] })
     .pattern(/\.(jpeg|jpg|png|gif|webp)$/i)
