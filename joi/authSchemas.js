@@ -70,6 +70,7 @@ export const signUpSchema = Joi.object({
   tagline: Joi.string().max(150).optional().allow(""),
   description: Joi.string().max(500).optional().allow(""),
   groups: Joi.array().items(objectId).default([]),
+  invites: Joi.array().items(objectId).default([]),
 });
 
 export const signInSchema = Joi.object({

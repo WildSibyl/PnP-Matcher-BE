@@ -47,7 +47,7 @@ const calculateMatchScore = (userA, userB, distance) => {
 
   //Negative check (See if userB disliked something that userA likes)
   const bDislikeSet = new Set(userB.dislikes);
-  const dislikeClashes = userA.likes.filter((item) =>
+  const dislikeClashes = (userA.likes || []).filter((item) =>
     bDislikeSet.has(item)
   ).length;
   const clashScore = Math.min(dislikeClashes * deductFilter, maxDeduct); //deduct points for each likes/dislikes clashes
