@@ -6,6 +6,7 @@ import {
   getAllGroups,
   getSingleGroup,
   updateGroup,
+  checkGroupnameAvailability,
 } from "../controllers/groups.js";
 import { groupSchema } from "../joi/groupSchemas.js";
 import verifyToken from "../middlewares/verifyToken.js";
@@ -16,6 +17,8 @@ groupsRouter
   .route("/")
   .get(getAllGroups)
   .post(validateSchema(groupSchema), verifyToken, createGroup);
+
+groupsRouter.route("/check-name").get(checkGroupnameAvailability);
 
 groupsRouter
   .route("/:id")

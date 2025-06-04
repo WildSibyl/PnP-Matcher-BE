@@ -90,3 +90,22 @@ export const deleteGroup = async (req, res) => {
     throw new ErrorResponse("You are not authorized to delete this group", 403);
   }
 };
+
+export const checkGroupnameAvailability = async (req, res) => {
+  const { name } = req.query;
+
+  if (!name) {
+    return res.status(400).json({ error: "Group name is required" });
+  }
+
+  try {
+    const existingGroup = await Group.findOne({
+      name: { $regex: `^${name}$`, $options: "i" },
+    });
+
+    res.json({ isAvailable: !existingGroup });
+  } catch (err) {
+    console.error("Error checking group name:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+};
