@@ -15,13 +15,15 @@ export const groupSchema = Joi.object({
     .messages({
       "string.pattern.base":
         "Image must be a valid URL ending in .jpeg, .jpg, .png, .gif, or .webp",
-    }),
+    })
+    .optional()
+    .allow(""),
   address: Joi.object({
-    street: Joi.string(),
-    houseNumber: Joi.string(),
-    postalCode: Joi.string(),
-    city: Joi.string(),
-  }),
+    street: Joi.string().required(),
+    houseNumber: Joi.string().required(),
+    postalCode: Joi.string().required(),
+    city: Joi.string().required(),
+  }).required(),
   experience: objectId.required(),
   systems: Joi.array().items(objectId).min(1).required(),
   weekdays: Joi.array() // Days of the week as an array of valid strings
@@ -34,12 +36,12 @@ export const groupSchema = Joi.object({
     .min(1)
     .max(31) // To allow max one play per day
     .required(),
-  playingModes: objectId.required(),
+  playingModes: objectId.optional().allow(null, ""),
   languages: Joi.array().items(objectId).required(),
-  playstyles: Joi.array().items(objectId).required(),
+  playstyles: Joi.array().items(objectId).default([]),
   likes: Joi.array().items(objectId).default([]),
   dislikes: Joi.array().items(objectId).default([]),
-  tagline: Joi.string().max(150).optional().allow(""),
+  tagline: Joi.string().max(150).required(),
   description: Joi.string().max(500).optional().allow(""),
   members: Joi.array().items(objectId).default([]),
   maxMembers: Joi.number().integer().min(1).max(30).required(),
