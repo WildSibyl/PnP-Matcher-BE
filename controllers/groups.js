@@ -39,7 +39,14 @@ export const getSingleGroup = async (req, res) => {
 
   if (!isValidObjectId(id)) throw new ErrorResponse("Invalid id", 400);
 
-  const group = await Group.findById(id).populate("author");
+  const group = await Group.findById(id)
+    .populate("author")
+    .populate("experience")
+    .populate("playingModes")
+    .populate("likes")
+    .populate("dislikes")
+    .populate("members")
+    .populate("systems");
   if (!group)
     throw new ErrorResponse(`Group with id of ${id} doesn't exist`, 404);
 
