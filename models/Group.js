@@ -8,22 +8,35 @@ const groupSchema = new Schema({
     ref: "User",
     required: [true, "Author is required"],
   },
-  name: { type: String, required: [true, "Group name is required"] },
-  image: {
+  name: {
     type: String,
-    required: [true, "Cover image is required"], //url or imported? or both?
+    unique: true, // This creates a unique index on the username field
+    trim: true,
+    required: [true, "Group name is required"],
     validate: {
       validator: function (v) {
-        return /\.(jpeg|jpg|png|gif|webp)$/i.test(v);
+        return /^[A-Za-z0-9\s]+$/.test(v);
       },
-      message: (props) => `${props.value} is not a valid image file.`,
+      message: "Group name can only contain letters, numbers, and spaces",
     },
   },
+  image: {
+    type: String,
+    validate: {
+      validator: function (value) {
+        if (!value) return true; // allow empty string or null
+        // your image validation logic here (e.g. regex for URL or file extension)
+        return /\.(jpg|jpeg|png|gif)$/i.test(value);
+      },
+      message: "is not a valid image file.",
+    },
+    default: "", // default to empty string if no image is provided
+  },
   address: {
-    street: { type: String },
-    houseNumber: { type: String },
-    postalCode: { type: String },
-    city: { type: String },
+    street: { type: String, required: true },
+    houseNumber: { type: String, required: true },
+    postalCode: { type: String, required: true },
+    city: { type: String, required: true },
     location: {
       type: {
         type: String,
@@ -64,7 +77,6 @@ const groupSchema = new Schema({
   playingModes: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Option",
-    required: [true, "Playing mode is required"],
   },
   languages: {
     type: [
@@ -84,7 +96,6 @@ const groupSchema = new Schema({
       },
     ],
     default: [],
-    required: [true, "Playstyle is required"],
   },
   likes: {
     type: [
@@ -107,6 +118,7 @@ const groupSchema = new Schema({
   tagline: {
     type: String,
     maxLength: 150,
+    required: [true, "Tagline is required"],
   },
   description: {
     type: String,
@@ -127,7 +139,7 @@ const groupSchema = new Schema({
     type: Number,
     min: 1,
     max: 30, // Assuming a maximum of 30 members, to be adjusted with the app logic
-    default: 10, // to avoid null values
+    default: 4, // to avoid null values
   },
   createdAt: { type: Date, default: Date.now },
 });
