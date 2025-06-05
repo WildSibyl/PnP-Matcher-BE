@@ -1,14 +1,44 @@
 import express from "express";
 import { Router } from "express";
 import fetch from "node-fetch"; // makes fetch requests possible in node.js
-import dotenv from "dotenv";
+import ErrorResponse from "../utils/ErrorResponse.js";
+import User from "../models/User.js";
+import verifyToken from "../middlewares/verifyToken.js";
 
 const aiRouter = Router();
 
-aiRouter.post("/suggest", async (req, res) => {
+aiRouter.post("/suggest", verifyToken, async (req, res, next) => {
   const { prompt } = req.body;
 
   try {
+    const userId = req.userId;
+
+    // Load user profile
+    const user = await User.findById(userId)
+      .populate("playstyles")
+      .populate("systems")
+      .populate("likes");
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    //Turn into strings
+    const playstylesStr = user.playstyles
+      .map((p) => p.label || p.value)
+      .join(", ");
+
+    const systemsStr = user.systems.map((s) => s.label || s.value).join(", ");
+
+    const likesStr = user.likes.map((l) => l.label || l.value).join(", ");
+
+    // Create dynamic chatGPT prompt
+    const aiPrompt = `Give me a very short creative ${prompt} based on this input:
+- username: ${user.userName}
+- tagline: ${user.tagline || "I like natural 20s"}
+- description: ${user.description || "No description"}
+- playstyles: ${playstylesStr || ""}
+- systems: ${systemsStr || ""}
+- likes: ${likesStr || ""}. just give back the suggestion, nothing else`;
+
+    // OpenAI fetch
     const openaiResponse = await fetch(
       "https://api.openai.com/v1/chat/completions",
       {
@@ -19,7 +49,7 @@ aiRouter.post("/suggest", async (req, res) => {
         },
         body: JSON.stringify({
           model: "gpt-4",
-          messages: [{ role: "user", content: prompt }],
+          messages: [{ role: "user", content: aiPrompt }],
         }),
       }
     );
@@ -29,8 +59,8 @@ aiRouter.post("/suggest", async (req, res) => {
 
     res.json({ suggestion });
   } catch (error) {
-    console.error("OpenAI-Fehler:", error);
-    res.status(500).json({ error: "Fehler beim Vorschlagen" });
+    console.error("OpenAI-Error:", error);
+    throw new ErrorResponse("Could not generate AI suggestion", 500);
   }
 });
 
