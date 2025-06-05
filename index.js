@@ -11,6 +11,7 @@ import errorHandler from "./middlewares/errorHandler.js";
 import uploadRoutes from "./routes/uploadRouter.js";
 import chatsRouter from "./routes/chatsRouter.js";
 import { WebSocketServer } from "ws";
+import aiRouter from "./routes/aiRouter.js";
 
 const app = express();
 const port = process.env.PORT || 8000;
@@ -41,6 +42,7 @@ app.use("/options", optionsRouter);
 app.use("/users", usersRouter);
 app.use("/check-username", usernameRouter); // Endpoint to check username availability
 app.use("/chats", chatsRouter);
+app.use("/api", aiRouter);
 
 //upload avatar url
 
