@@ -59,7 +59,6 @@ export const createGroup = async (req, res) => {
   const newGroup = await Group.create({
     ...body,
     author: req.userId,
-    address: user.address,
   });
 
   // Add group to user's list of groups
@@ -199,7 +198,7 @@ export const getFilteredGroups = async (req, res) => {
     }
 
     //User groups or empty array (if no user is logged in)
-    const userGroupIds = currentUser.groups || [];
+    const userGroupIds = currentUser?.groups || [];
 
     //filter groups out if they have the user as member or if they are in the groups list
     query._id = { $nin: userGroupIds };
@@ -259,7 +258,7 @@ export const getFilteredGroups = async (req, res) => {
 
     //CalculateMatchScore
     const groupsWithScore = groups.map((group) => {
-      if (currentUser) {
+      if (currentUser && currentUser.address?.location?.coordinates) {
         const userCoords = currentUser.address?.location?.coordinates;
         const groupCoords = group.address?.location?.coordinates;
 

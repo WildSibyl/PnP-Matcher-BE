@@ -117,7 +117,7 @@ export const getFilteredUsers = async (req, res) => {
     frequencyPerMonth = 0,
     languages = [],
     age = "",
-    sortBy = "name",
+    sortBy = "userName",
   } = req.body;
 
   const userId = req.userId;
@@ -133,20 +133,18 @@ export const getFilteredUsers = async (req, res) => {
     //Location is only used for logged in users
     if (userId && radiusNum !== 0) {
       currentUser = await User.findById(userId);
-      if (!currentUser || !currentUser.address?.location?.coordinates) {
-        return res.status(400).json({ error: "User location not available" });
-      }
-
-      const [lng, lat] = currentUser.address.location.coordinates;
-      query["address.location"] = {
-        $near: {
-          $geometry: {
-            type: "Point",
-            coordinates: [lng, lat], // reversed coordinates for MongoDB
+      if (currentUser && currentUser.address?.location?.coordinates) {
+        const [lng, lat] = currentUser.address.location.coordinates;
+        query["address.location"] = {
+          $near: {
+            $geometry: {
+              type: "Point",
+              coordinates: [lng, lat], // reversed coordinates for MongoDB
+            },
+            $maxDistance: radiusNum,
           },
-          $maxDistance: radiusNum,
-        },
-      };
+        };
+      }
     }
 
     // Convert string IDs to ObjectId for filters referencing populated fields
@@ -250,7 +248,7 @@ export const getFilteredUsers = async (req, res) => {
 
     //Calculate and return matchscore for each user
     const userWithScore = users.map((user) => {
-      if (currentUser) {
+      if (currentUser && currentUser.address?.location?.coordinates) {
         const [long1, lat1] = currentUser.address.location.coordinates; //get currUser coordinates
         const [long2, lat2] = user.address.location.coordinates; //get fetched user coordinates
 
