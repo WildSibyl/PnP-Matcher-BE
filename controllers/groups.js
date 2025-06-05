@@ -59,7 +59,6 @@ export const createGroup = async (req, res) => {
   const newGroup = await Group.create({
     ...body,
     author: req.userId,
-    address: user.address,
   });
 
   // Add group to user's list of groups
