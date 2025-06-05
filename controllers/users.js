@@ -389,6 +389,7 @@ export const getRollMatches = async (req, res) => {
 
     try {
       const allUsers = await User.find({
+        _id: { $ne: userId },
         "address.location": {
           $near: {
             $geometry: {
@@ -438,18 +439,20 @@ export const getRollMatches = async (req, res) => {
       const matchOver70 = userWithScore.filter((e) => e.matchScore > 70);
       const matchOver10 = userWithScore.filter((e) => e.matchScore > 10);
       let randomFour;
-      if (matchOver80.length > 5) {
+      if (matchOver80.length > 4) {
         //give back 4 random users with match score over 80
         const shuffled = matchOver80.sort(() => 0.5 - Math.random());
         randomFour = shuffled.slice(0, 4);
-      } else if (matchOver70.length > 5) {
+      } else if (matchOver70.length > 4) {
         //give back 4 random users with match score over 70
         const shuffled = matchOver70.sort(() => 0.5 - Math.random());
         randomFour = shuffled.slice(0, 4);
-      } else if (matchOver10.length > 5) {
-        //give back 4 random users with match score over 10
-        const shuffled = matchOver10.sort(() => 0.5 - Math.random());
-        randomFour = shuffled.slice(0, 4);
+      } else if (matchOver10.length > 3) {
+        //give back the 4 users with the highest match score
+        const topFour = matchOver10
+          .sort((a, b) => b.matchScore - a.matchScore)
+          .slice(0, 4);
+        randomFour = topFour;
       } else {
         return res.status(404).json({ message: "Not enough users nearby" });
       }
