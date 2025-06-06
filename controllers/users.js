@@ -302,7 +302,16 @@ export const getSingleUser = async (req, res) => {
     .populate("playstyles")
     .populate("likes")
     .populate("dislikes")
-    .populate("groups");
+    .populate({
+      path: "groups",
+      populate: [
+        { path: "experience" },
+        { path: "systems" },
+        { path: "playstyles" },
+        { path: "playingModes" },
+        { path: "likes" },
+      ],
+    });
 
   if (!user)
     throw new ErrorResponse(`User with id of ${id} doesn't exist`, 404);
@@ -542,7 +551,7 @@ export const inviteToGroup = async (req, res) => {
   } catch (error) {
     console.error("Error inviting user:", error);
     const status = error.statusCode || 500;
-    res.status(status).json({ message: error.message || "Server error" });
+    throw new ErrorResponse(`Error inviting user: ${error}`, status);
   }
 };
 
