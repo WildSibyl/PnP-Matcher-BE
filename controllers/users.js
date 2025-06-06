@@ -1,9 +1,10 @@
 import { isValidObjectId } from "mongoose";
-import User from "../models/User.js";
-import ErrorResponse from "../utils/ErrorResponse.js";
 import { Types } from "mongoose";
-import calculateMatchScore from "../utils/getScore.js";
+import User from "../models/User.js";
 import Group from "../models/Group.js";
+import ErrorResponse from "../utils/ErrorResponse.js";
+import calculateMatchScore from "../utils/getScore.js";
+import { getCoordinates } from "../utils/getCoordinates.js";
 
 //distance magic
 function getDistanceInMeters(lat1, lon1, lat2, lon2) {
@@ -320,7 +321,24 @@ export const updateUser = async (req, res) => {
 
   const me = await User.findById(req.userId);
   if (me._id.toString() === id || req.userPermission === "admin") {
-    const user = await User.findByIdAndUpdate(id, body, {
+    let updatedData = { ...body };
+
+    // If address is present, generate new coordinates
+    if (body.address) {
+      const { address } = body;
+
+      const { lat, lng } = await getCoordinates(address);
+
+      updatedData.address = {
+        ...address,
+        location: {
+          type: "Point",
+          coordinates: [lng, lat], // longitude, latitude
+        },
+      };
+    }
+
+    const user = await User.findByIdAndUpdate(id, updatedData, {
       new: true,
       runValidators: true,
     });

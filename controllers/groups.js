@@ -1,9 +1,10 @@
 import { isValidObjectId } from "mongoose";
-import Group from "../models/Group.js";
-import ErrorResponse from "../utils/ErrorResponse.js";
-import User from "../models/User.js";
 import { Types } from "mongoose";
+import Group from "../models/Group.js";
+import User from "../models/User.js";
+import ErrorResponse from "../utils/ErrorResponse.js";
 import calculateMatchScore from "../utils/getScore.js";
+import { getCoordinates } from "../utils/getCoordinates.js";
 
 //distance magic
 function getDistanceInMeters(lat1, lon1, lat2, lon2) {
@@ -56,9 +57,20 @@ export const createGroup = async (req, res) => {
   const user = await User.findById(req.userId);
   if (!user) throw new ErrorResponse("User doesn't exist", 404);
 
+  // Safely extract and transform coordinates
+  const { address } = body;
+
+  const { lat, lng } = await getCoordinates(address);
+
   const newGroup = await Group.create({
     ...body,
     author: req.userId,
+    address: {
+      ...address,
+      location: {
+        coordinates: [lng, lat], //Always longitude first and then latitude
+      },
+    },
   });
 
   // Add group to user's list of groups
@@ -110,7 +122,24 @@ export const updateGroup = async (req, res) => {
     group.author.toString() === req.userId ||
     req.userPermission === "admin"
   ) {
-    const updatedGroup = await Group.findByIdAndUpdate(id, body, {
+    let updatedData = { ...body };
+
+    // If address is being updated, regenerate coordinates
+    if (body.address) {
+      const { address } = body;
+
+      const { lat, lng } = await getCoordinates(address);
+
+      updatedData.address = {
+        ...address,
+        location: {
+          type: "Point",
+          coordinates: [lng, lat], // Longitude first!
+        },
+      };
+    }
+
+    const updatedGroup = await Group.findByIdAndUpdate(id, updatedData, {
       new: true,
     }).populate("author");
     if (!updatedGroup)
