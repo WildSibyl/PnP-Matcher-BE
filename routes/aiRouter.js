@@ -36,7 +36,9 @@ aiRouter.post("/suggest", verifyToken, async (req, res, next) => {
 - description: ${user.description || "No description"}
 - playstyles: ${playstylesStr || ""}
 - systems: ${systemsStr || ""}
-- likes: ${likesStr || ""}. just give back the suggestion, nothing else`;
+- likes: ${
+      likesStr || ""
+    }. only use Numbers, Letters and Spaces - don't use special characters like !"§$%&/()=?-_'#+*, don't put it in quotation marks`;
 
     // OpenAI fetch
     const openaiResponse = await fetch(

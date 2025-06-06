@@ -7,7 +7,10 @@ export const groupSchema = Joi.object({
   author: objectId.required(),
   name: Joi.string()
     .trim()
-    .pattern(/^[A-Za-z0-9\s]+$/, "letters, numbers, and spaces")
+    .pattern(
+      /^[A-Za-z0-9\s!:\-,&?"']+$/,
+      "letters, numbers, spaces and :-',&?!"
+    )
     .required(),
   image: Joi.string()
     .uri({ scheme: ["http", "https"] })

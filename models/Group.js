@@ -15,7 +15,7 @@ const groupSchema = new Schema({
     required: [true, "Group name is required"],
     validate: {
       validator: function (v) {
-        return /^[A-Za-z0-9\s]+$/.test(v);
+        return /^[A-Za-z0-9\s!:\-,&?"']+$/.test(v);
       },
       message: "Group name can only contain letters, numbers, and spaces",
     },
