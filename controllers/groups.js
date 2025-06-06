@@ -62,9 +62,17 @@ export const createGroup = async (req, res) => {
 
   const { lat, lng } = await getCoordinates(address);
 
+  let image;
+  if (!body.image) {
+    image = "https://i.imgur.com/A72K4gz.jpeg";
+  } else {
+    image = body.image;
+  }
+
   const newGroup = await Group.create({
     ...body,
     author: req.userId,
+    image,
     address: {
       ...address,
       location: {
