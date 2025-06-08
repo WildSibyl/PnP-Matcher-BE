@@ -77,6 +77,8 @@ const groupSchema = new Schema({
   playingModes: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Option",
+    default: null, // This allows it to be null
+    required: false,
   },
   languages: {
     type: [
