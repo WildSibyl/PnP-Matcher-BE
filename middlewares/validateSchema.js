@@ -4,10 +4,12 @@ const validateSchema = (joiSchema) => (req, res, next) => {
   const { error } = joiSchema.validate(req.body);
 
   if (error) {
-    console.log("Validation error: ", error.details);
-    throw new ErrorResponse(
-      "Some fields have not been filled correctly, please check!",
-      400
+    console.error("❌ Joi Validation Error:", error.details);
+    return next(
+      new ErrorResponse(
+        "Some fields have not been filled correctly, please check!",
+        400
+      )
     );
   }
 
