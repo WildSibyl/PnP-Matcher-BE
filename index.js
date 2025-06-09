@@ -42,7 +42,7 @@ app.use("/options", optionsRouter);
 app.use("/users", usersRouter);
 app.use("/check-username", usernameRouter); // Endpoint to check username availability
 app.use("/chats", chatsRouter);
-app.use("/api", aiRouter);
+app.use("/ai", aiRouter);
 
 //upload avatar url
 
