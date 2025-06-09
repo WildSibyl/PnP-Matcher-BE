@@ -361,24 +361,128 @@ export const updateUser = async (req, res) => {
   }
 };
 
-export const deleteUser = async (req, res) => {
-  const {
-    params: { id },
-  } = req;
+// export const deleteUser = async (req, res) => {
+//   const {
+//     params: { id },
+//   } = req;
 
-  // Mongoose offers a method to check if the id is valid
+//   console.log("Delete user endpoint hit with id:", id);
+
+//   if (!isValidObjectId(id)) throw new ErrorResponse("Invalid id", 400);
+
+//   const me = await User.findById(req.userId);
+//   if (!me) throw new ErrorResponse("Unauthorized access", 401);
+
+//   if (me._id.toString() !== id && req.userPermission !== "admin") {
+//     throw new ErrorResponse("You are not authorized to delete this user", 403);
+//   }
+
+//   const user = await User.findById(id);
+//   if (!user) throw new ErrorResponse(`User with id ${id} not found`, 404);
+
+//   try {
+//     // Remove user from all groups
+//     await Group.updateMany({ members: id }, { $pull: { members: id } });
+
+//     // Find groups authored by the user
+//     const authoredGroups = await Group.find({ author: id });
+//     const authoredGroupIds = authoredGroups.map((group) => group._id);
+//     console.log("Authored group IDs:", authoredGroupIds);
+
+//     // Delete all groups authored by the user
+//     await Group.deleteMany({ author: id });
+
+//     // Remove authored group invites from all users
+//     if (authoredGroupIds.length > 0) {
+//       await User.updateMany(
+//         { invites: { $in: authoredGroupIds } },
+//         { $pull: { invites: { $in: authoredGroupIds } } }
+//       );
+//     }
+
+//     // Remove authored groups from all users
+//     if (authoredGroupIds.length > 0) {
+//       await User.updateMany(
+//         { groups: { $in: authoredGroupIds } },
+//         { $pull: { groups: { $in: authoredGroupIds } } }
+//       );
+//     }
+
+//     // Delete the user
+//     await User.findByIdAndDelete(id);
+
+//     res.status(200).json({
+//       success: `User with ID ${id} and related data was deleted.`,
+//     });
+//   } catch (error) {
+//     console.error("Error during user deletion:", error);
+//     res.status(500).json({ error: "Internal server error" });
+//   }
+// };
+
+export const deleteUser = async (req, res) => {
+  const { id } = req.params;
+
   if (!isValidObjectId(id)) throw new ErrorResponse("Invalid id", 400);
 
   const me = await User.findById(req.userId);
-  if (me._id.toString() === id || req.userPermission === "admin") {
-    const user = await User.findByIdAndDelete(id);
+  if (!me) throw new ErrorResponse("Unauthorized access", 401);
 
-    if (!user)
-      throw new ErrorResponse(`User with id of ${id} doesn't exist`, 404);
-
-    res.send(user);
-  } else {
+  if (me._id.toString() !== id && req.userPermission !== "admin") {
     throw new ErrorResponse("You are not authorized to delete this user", 403);
+  }
+
+  const user = await User.findById(id);
+  if (!user) throw new ErrorResponse(`User with id ${id} not found`, 404);
+
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    // Remove user from all groups
+    await Group.updateMany(
+      { members: id },
+      { $pull: { members: id } },
+      { session }
+    );
+
+    // Find groups authored by the user
+    const authoredGroups = await Group.find({ author: id }, null, { session });
+    const authoredGroupIds = authoredGroups.map((group) => group._id);
+
+    // Delete all groups authored by the user
+    await Group.deleteMany({ author: id }, { session });
+
+    // Remove authored group invites from all users
+    if (authoredGroupIds.length > 0) {
+      await User.updateMany(
+        { invites: { $in: authoredGroupIds } },
+        { $pull: { invites: { $in: authoredGroupIds } } },
+        { session }
+      );
+
+      await User.updateMany(
+        { groups: { $in: authoredGroupIds } },
+        { $pull: { groups: { $in: authoredGroupIds } } },
+        { session }
+      );
+    }
+
+    // Delete the user
+    await User.findByIdAndDelete(id, { session });
+
+    await session.commitTransaction();
+    session.endSession();
+
+    res.status(200).json({
+      success: `User with ID ${id} and related data was deleted.`,
+    });
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+
+    console.error("Error during user deletion:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 };
 
