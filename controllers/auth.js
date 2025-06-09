@@ -25,7 +25,6 @@ export const signUp = async (req, res) => {
       weekdays = [],
       frequencyPerMonth,
       terms = false,
-      avatarUrl = "",
       languages = [],
       playingRoles,
       playingModes,
@@ -36,6 +35,8 @@ export const signUp = async (req, res) => {
       description,
     } = req.body;
 
+    let { avatarUrl } = req.body;
+
     // Pre-check username
     const userNameExists = await User.findOne({ userName });
     if (userNameExists) throw new ErrorResponse("Username already taken", 409);
@@ -43,6 +44,11 @@ export const signUp = async (req, res) => {
     // Pre-check email
     const userExists = await User.findOne({ email });
     if (userExists) throw new ErrorResponse("Email already registered", 409);
+
+    // Set default avatar (why does the one in the model not work? because it gets overwritten with an empty string on signup)
+    if (!avatarUrl) {
+      avatarUrl = "https://i.ibb.co/F4MD88Lt/Ren-avatar.png";
+    }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
