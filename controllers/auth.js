@@ -25,7 +25,7 @@ export const signUp = async (req, res) => {
       weekdays = [],
       frequencyPerMonth,
       terms = false,
-      avatarUrl = "",
+      avatarUrl = "https://i.ibb.co/F4MD88Lt/Ren-avatar.png",
       languages = [],
       playingRoles,
       playingModes,
@@ -43,6 +43,13 @@ export const signUp = async (req, res) => {
     // Pre-check email
     const userExists = await User.findOne({ email });
     if (userExists) throw new ErrorResponse("Email already registered", 409);
+
+    // Set default avatar
+
+    if (!avatarUrl) {
+      // wenn avatarUrl undefined, null, leerer String, false, 0 etc.
+      avatarUrl = "https://i.ibb.co/F4MD88Lt/Ren-avatar.png";
+    }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
