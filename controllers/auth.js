@@ -144,6 +144,7 @@ export const signIn = async (req, res) => {
     email: user.email,
     address: user.address,
     groups: user.groups,
+    invites: user.invites,
     _id: user._id,
   };
 
