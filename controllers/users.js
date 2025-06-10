@@ -133,7 +133,15 @@ export const getFilteredUsers = async (req, res) => {
 
     //Location is only used for logged in users
     if (userId && radiusNum !== 0) {
-      currentUser = await User.findById(userId);
+      currentUser = await User.findById(userId)
+        .populate("experience")
+        .populate("systems")
+        .populate("languages")
+        .populate("playingRoles")
+        .populate("playingModes")
+        .populate("playstyles")
+        .populate("likes")
+        .populate("dislikes");
       if (currentUser && currentUser.address?.location?.coordinates) {
         const [lng, lat] = currentUser.address.location.coordinates;
         query["address.location"] = {
