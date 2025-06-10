@@ -139,15 +139,7 @@ export const signIn = async (req, res) => {
     sameSite: isProduction ? "None" : "Lax", // CSRF protection: lax for same-site requests (top level navigation), strict for cross-site, none for no restrictions
   };
 
-  const signedInUser = {
-    userName: user.userName,
-    email: user.email,
-    address: user.address,
-    avatarUrl: user.avatarUrl,
-    groups: user.groups,
-    invites: user.invites,
-    _id: user._id,
-  };
+  const signedInUser = user;
 
   res.cookie("token", token, cookieOptions);
 
