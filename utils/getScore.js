@@ -4,12 +4,17 @@ const calculateMatchScore = (userA, userB, distance) => {
   const hiFilter = 2; //multiplicator for category
   const deductFilter = 3; //points that will be deducted for each like/dislike clash
   const maxDeduct = 20; //max point that will be deducted in the like/dislike check
-  const pointGoal = 20; // if the users have this much matches they get full match 99%
+  const pointGoal = 25; // if the users have this much matches they get full match 99%
 
   const scoreRatio = (aList = [], bList = [], weight) => {
-    const unique = new Set([...aList, ...bList]).size; //Get number of unique values from user A AND B
-    const bSet = new Set([...bList]); //create a set from B for easier and faster searchability
-    const shared = aList.filter((item) => bSet.has(item)).length; //check number of matching values between A and B
+    const extractIds = (arr) =>
+      arr.map((item) => (item._id ? item._id.toString() : item.toString()));
+
+    const aIds = extractIds(aList);
+    const bIds = extractIds(bList);
+
+    const bSet = new Set(bIds);
+    const shared = aIds.filter((id) => bSet.has(id)).length;
 
     return Math.min(10, shared * weight); //each match gives one point up to the maximum per category
   };
@@ -63,18 +68,21 @@ const calculateMatchScore = (userA, userB, distance) => {
 
   const finalScore = Math.round((100 / pointGoal) * score);
 
-  //LOG ALL VALUES
-  // console.log({
-  //   systems: systemsScore,
-  //   likes: likesScore,
-  //   dislikes: dislikesScore,
-  //   weekdays: weekdaysScore,
-  //   playstyles: playstylesScore,
-  //   distance: distanceScore,
-  //   clashScore: clashScore,
-  //   totalScore: score,
-  //   finalScore: finalScore,
-  // });
+  // LOG ALL VALUES
+  console.log({
+    systems: systemsScore,
+    likes: likesScore,
+    dislikes: dislikesScore,
+    weekdays: weekdaysScore,
+    playstyles: playstylesScore,
+    distance: distanceScore,
+    clashScore: clashScore,
+    totalScore: score,
+    finalScore: finalScore,
+  });
+
+  console.log("currentUser.systems:", userA.systems);
+  console.log("user.systems:", userB.systems);
 
   return Math.max(1, Math.min(finalScore, 99));
 };
