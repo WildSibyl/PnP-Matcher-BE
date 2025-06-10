@@ -143,7 +143,9 @@ export const signIn = async (req, res) => {
     userName: user.userName,
     email: user.email,
     address: user.address,
+    avatarUrl: user.avatarUrl,
     groups: user.groups,
+    invites: user.invites,
     _id: user._id,
   };
 
